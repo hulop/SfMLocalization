@@ -13,14 +13,12 @@ Pre-Requisites
 - [py-yajl 0.3.5](https://pypi.python.org/pypi/yajl)  (BSD License)
 - [matplotlib 1.4.3](http://matplotlib.org/)  (Python License 2)
 
-How Can I Contribute?
+
+## About
 ----
-Please provide "CONTRIBUTOR LICENSE AGREEMENT (CLA)" below before you start your contributions.
-
-- [Individual CLA](https://github.com/hulop/SfMLocalization/blob/master/cla-individual.md)
-- [Corporate CLA](https://github.com/hulop/SfMLocalization/blob/master/cla-corporate.md)
+[About HULOP](https://github.com/hulop/00Readme)
 
 
-License
+##License
 ----
 [MIT](http://opensource.org/licenses/MIT)
