@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="cdt.managedbuild.config.gnu.cross.exe.debug.299919672">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cross.exe.debug.299919672" moduleId="org.eclipse.cdt.core.settings" name="Debug">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.debug.299919672" name="Debug" parent="cdt.managedbuild.config.gnu.cross.exe.debug">
+					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.debug.299919672." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.debug.437561652" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.debug">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.760849080" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
+							<builder buildPath="${workspace_loc:/MatchBoW}/Debug" id="cdt.managedbuild.builder.gnu.cross.1987012870" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross">
+								<outputEntries>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Debug"/>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="Release"/>
+								</outputEntries>
+							</builder>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1841386118" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
+								<option defaultValue="gnu.c.optimization.level.none" id="gnu.c.compiler.option.optimization.level.434335368" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.debugging.level.1742282888" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.misc.other.1244024867" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fopenmp" valueType="string"/>
+								<option id="gnu.c.compiler.option.include.paths.749525082" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/opt/opencv-3.0.0/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/eigen3"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/third_party"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/multiview"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/features"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/features/akaze"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/third_party/lemon"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/cereal/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Osi/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Clp/src/OsiClp"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Clp/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/CoinUtils/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Osi/src/Osi"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TrainBoW/ExtFeatAndMatch/src}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.997616934" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.234691279" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.optimization.level.731450485" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.debugging.level.2137009599" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.1681776619" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/opt/opencv-3.0.0/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/eigen3"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/third_party"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/multiview"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/features"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/features/akaze"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/third_party/lemon"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/cereal/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Osi/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Clp/src/OsiClp"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Clp/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/CoinUtils/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Osi/src/Osi"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ExtFeatAndMatch/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/VisionLocalizeCommon/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BoWCommon/src}&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.other.other.1629747763" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11 -fopenmp" valueType="string"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.818901457" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1409570731" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.1885650773" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+								<option id="gnu.cpp.link.option.paths.2135390494" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="/opt/opencv-3.0.0/lib"/>
+								</option>
+								<option id="gnu.cpp.link.option.libs.103505268" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="openMVG_sfm"/>
+									<listOptionValue builtIn="false" value="openMVG_features"/>
+									<listOptionValue builtIn="false" value="openMVG_matching_image_collection"/>
+									<listOptionValue builtIn="false" value="openMVG_multiview"/>
+									<listOptionValue builtIn="false" value="openMVG_numeric"/>
+									<listOptionValue builtIn="false" value="openMVG_lInftyComputerVision"/>
+									<listOptionValue builtIn="false" value="openMVG_system"/>
+									<listOptionValue builtIn="false" value="openMVG_image"/>
+									<listOptionValue builtIn="false" value="opencv_flann"/>
+									<listOptionValue builtIn="false" value="opencv_xfeatures2d"/>
+									<listOptionValue builtIn="false" value="opencv_features2d"/>
+									<listOptionValue builtIn="false" value="opencv_imgcodecs"/>
+									<listOptionValue builtIn="false" value="opencv_highgui"/>
+									<listOptionValue builtIn="false" value="opencv_core"/>
+									<listOptionValue builtIn="false" value="openMVG_kvld"/>
+									<listOptionValue builtIn="false" value="stlplus"/>
+									<listOptionValue builtIn="false" value="ceres"/>
+									<listOptionValue builtIn="false" value="cxsparse"/>
+									<listOptionValue builtIn="false" value="cholmod"/>
+									<listOptionValue builtIn="false" value="glog"/>
+									<listOptionValue builtIn="false" value="lapack"/>
+									<listOptionValue builtIn="false" value="blas"/>
+									<listOptionValue builtIn="false" value="gomp"/>
+									<listOptionValue builtIn="false" value="pthread"/>
+									<listOptionValue builtIn="false" value="png"/>
+									<listOptionValue builtIn="false" value="jpeg"/>
+									<listOptionValue builtIn="false" value="tiff"/>
+									<listOptionValue builtIn="false" value="lib_OsiClpSolver"/>
+									<listOptionValue builtIn="false" value="lib_Osi"/>
+									<listOptionValue builtIn="false" value="lib_clp"/>
+									<listOptionValue builtIn="false" value="lib_CoinUtils"/>
+									<listOptionValue builtIn="false" value="vlsift"/>
+									<listOptionValue builtIn="false" value="flann_cpp_s"/>
+									<listOptionValue builtIn="false" value="lemon"/>
+									<listOptionValue builtIn="false" value="easyexif"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgproc"/>
+								</option>
+								<option id="gnu.cpp.link.option.flags.219449197" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fopenmp" valueType="string"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1067439067" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.1588110738" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.671443235" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
+								<option id="gnu.both.asm.option.include.paths.1953603437" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="/opt/opencv-3.0.0/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/eigen3"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/third_party"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/multiview"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/features"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/features/akaze"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/third_party/lemon"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/cereal/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Osi/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Clp/src/OsiClp"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Clp/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/CoinUtils/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Osi/src/Osi"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TrainBoW/ExtFeatAndMatch/src}&quot;"/>
+								</option>
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.206316393" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="BoWCommon"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="VisionLocalizeCommon"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="cdt.managedbuild.config.gnu.cross.exe.release.1986282600">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.config.gnu.cross.exe.release.1986282600" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.cross.exe.release.1986282600" name="Release" parent="cdt.managedbuild.config.gnu.cross.exe.release">
+					<folderInfo id="cdt.managedbuild.config.gnu.cross.exe.release.1986282600." name="/" resourcePath="">
+						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.exe.release.1999535218" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.exe.release">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1550171287" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
+							<builder buildPath="${workspace_loc:/MatchBoW}/Release" id="cdt.managedbuild.builder.gnu.cross.1816235937" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1122692981" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
+								<option defaultValue="gnu.c.optimization.level.most" id="gnu.c.compiler.option.optimization.level.234378407" name="Optimization Level" superClass="gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.debugging.level.414338519" name="Debug Level" superClass="gnu.c.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.c.debugging.level.none" valueType="enumerated"/>
+								<option id="gnu.c.compiler.option.misc.other.2121140132" name="Other flags" superClass="gnu.c.compiler.option.misc.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -fopenmp" valueType="string"/>
+								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.675652134" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1843160652" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
+								<option id="gnu.cpp.compiler.option.optimization.level.659462159" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.most" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.debugging.level.69670321" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.none" valueType="enumerated"/>
+								<option id="gnu.cpp.compiler.option.include.paths.300518631" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
+									<listOptionValue builtIn="false" value="/opt/opencv-3.0.0/include"/>
+									<listOptionValue builtIn="false" value="/usr/include/eigen3"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/third_party"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/multiview"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/features"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/features/akaze"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG/third_party/lemon"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/cereal/include"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Osi/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Clp/src/OsiClp"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Clp/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/CoinUtils/src"/>
+									<listOptionValue builtIn="false" value="/usr/local/include/openMVG_dependencies/osi_clp/Osi/src/Osi"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/ExtFeatAndMatch/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/VisionLocalizeCommon/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BoWCommon/src}&quot;"/>
+								</option>
+								<option id="gnu.cpp.compiler.option.other.other.775630327" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11 -fopenmp" valueType="string"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1635297050" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.707353744" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.792196708" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+								<option id="gnu.cpp.link.option.paths.978484305" name="Library search path (-L)" superClass="gnu.cpp.link.option.paths" valueType="libPaths">
+									<listOptionValue builtIn="false" value="/usr/lib/x86_64-linux-gnu"/>
+									<listOptionValue builtIn="false" value="/usr/local/lib"/>
+									<listOptionValue builtIn="false" value="/opt/opencv-3.0.0/lib"/>
+								</option>
+								<option id="gnu.cpp.link.option.libs.1072018525" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
+									<listOptionValue builtIn="false" value="openMVG_sfm"/>
+									<listOptionValue builtIn="false" value="openMVG_features"/>
+									<listOptionValue builtIn="false" value="openMVG_matching_image_collection"/>
+									<listOptionValue builtIn="false" value="openMVG_multiview"/>
+									<listOptionValue builtIn="false" value="openMVG_numeric"/>
+									<listOptionValue builtIn="false" value="openMVG_lInftyComputerVision"/>
+									<listOptionValue builtIn="false" value="openMVG_system"/>
+									<listOptionValue builtIn="false" value="openMVG_image"/>
+									<listOptionValue builtIn="false" value="opencv_flann"/>
+									<listOptionValue builtIn="false" value="opencv_xfeatures2d"/>
+									<listOptionValue builtIn="false" value="opencv_features2d"/>
+									<listOptionValue builtIn="false" value="opencv_imgcodecs"/>
+									<listOptionValue builtIn="false" value="opencv_highgui"/>
+									<listOptionValue builtIn="false" value="opencv_core"/>
+									<listOptionValue builtIn="false" value="openMVG_kvld"/>
+									<listOptionValue builtIn="false" value="stlplus"/>
+									<listOptionValue builtIn="false" value="ceres"/>
+									<listOptionValue builtIn="false" value="cxsparse"/>
+									<listOptionValue builtIn="false" value="cholmod"/>
+									<listOptionValue builtIn="false" value="glog"/>
+									<listOptionValue builtIn="false" value="lapack"/>
+									<listOptionValue builtIn="false" value="blas"/>
+									<listOptionValue builtIn="false" value="gomp"/>
+									<listOptionValue builtIn="false" value="pthread"/>
+									<listOptionValue builtIn="false" value="png"/>
+									<listOptionValue builtIn="false" value="jpeg"/>
+									<listOptionValue builtIn="false" value="tiff"/>
+									<listOptionValue builtIn="false" value="lib_OsiClpSolver"/>
+									<listOptionValue builtIn="false" value="lib_Osi"/>
+									<listOptionValue builtIn="false" value="lib_clp"/>
+									<listOptionValue builtIn="false" value="lib_CoinUtils"/>
+									<listOptionValue builtIn="false" value="vlsift"/>
+									<listOptionValue builtIn="false" value="flann_cpp_s"/>
+									<listOptionValue builtIn="false" value="lemon"/>
+									<listOptionValue builtIn="false" value="easyexif"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgproc"/>
+								</option>
+								<option id="gnu.cpp.link.option.flags.759345786" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fopenmp" valueType="string"/>
+								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.573197186" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="cdt.managedbuild.tool.gnu.cross.archiver.180031783" name="Cross GCC Archiver" superClass="cdt.managedbuild.tool.gnu.cross.archiver"/>
+							<tool id="cdt.managedbuild.tool.gnu.cross.assembler.1364874978" name="Cross GCC Assembler" superClass="cdt.managedbuild.tool.gnu.cross.assembler">
+								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1223262138" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="BoWCommon"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="VisionLocalizeCommon"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="MatchBoW.cdt.managedbuild.target.gnu.cross.exe.1428845397" name="Executable" projectType="cdt.managedbuild.target.gnu.cross.exe"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.299919672;cdt.managedbuild.config.gnu.cross.exe.debug.299919672.;cdt.managedbuild.tool.gnu.cross.c.compiler.1841386118;cdt.managedbuild.tool.gnu.c.compiler.input.997616934">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.release.1986282600;cdt.managedbuild.config.gnu.cross.exe.release.1986282600.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.1843160652;cdt.managedbuild.tool.gnu.cpp.compiler.input.1635297050">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.release.1986282600;cdt.managedbuild.config.gnu.cross.exe.release.1986282600.;cdt.managedbuild.tool.gnu.cross.c.compiler.1122692981;cdt.managedbuild.tool.gnu.c.compiler.input.675652134">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.cross.exe.debug.299919672;cdt.managedbuild.config.gnu.cross.exe.debug.299919672.;cdt.managedbuild.tool.gnu.cross.cpp.compiler.234691279;cdt.managedbuild.tool.gnu.cpp.compiler.input.818901457">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/MatchBoW"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/MatchBoW"/>
+		</configuration>
+	</storageModule>
+</cproject>
