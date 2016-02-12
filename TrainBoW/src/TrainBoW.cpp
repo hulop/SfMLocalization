@@ -37,9 +37,10 @@ using namespace openMVG::sfm;
 using namespace hulo;
 
 const cv::String keys =
-		"{@inputDir    |      | input directory}"
-		"{@bowFile     |      | output BoW file}"
-		"{@pcaFile     |      | output PCA file (optional)}";
+		"{h help 	   || print this message}"
+		"{@inputDir    || input directory}"
+		"{@bowFile     || output BoW file}"
+		"{p pcaFile    || output PCA file (optional)}";
 
 ////////////	start settings			///////
 static const int PCA_TRAIN_FEATURE_NUM = 300000;
@@ -89,8 +90,7 @@ cv::Mat getRandomTrainFeatures(
 		DenseLocalFeatureWrapper &denseLocalFeatureWrapper,
 		const vector<string> &images, int trainFeatureNum,
 		int trainFeatureNumPerImage) {
-	// init random number
-	srand((unsigned int) time(NULL));
+	cv::RNG rng;
 
 	int trainImageNum = trainFeatureNum / trainFeatureNumPerImage;
 	cv::Mat features = cv::Mat::zeros(trainFeatureNumPerImage * trainImageNum,
@@ -98,8 +98,8 @@ cv::Mat getRandomTrainFeatures(
 
 #pragma omp parallel for
 	for (int i = 0; i < trainImageNum; i++) {
-		float randImage = static_cast<float>(rand())
-				/ static_cast<float>(RAND_MAX);
+		float randImage = rng.uniform(0.f, 1.f);
+		cout << "extract feature from " << images[images.size() * randImage] << endl;
 
 		std::vector<cv::KeyPoint> keypoints;
 		cv::Mat descriptors = denseLocalFeatureWrapper.calcDenseLocalFeature(
@@ -109,8 +109,7 @@ cv::Mat getRandomTrainFeatures(
 			continue;
 		}
 		for (int j = 0; j < trainFeatureNumPerImage; j++) {
-			float randFeature = static_cast<float>(rand())
-					/ static_cast<float>(RAND_MAX);
+			float randFeature = rng.uniform(0.f, 1.f);
 			int k = descriptors.rows * randFeature;
 
 			for (int l = 0; l < descriptors.cols; l++) {
@@ -128,20 +127,22 @@ cv::Mat getRandomTrainFeatures(
 int main(int argc, char* argv[]) {
 	cv::CommandLineParser parser(argc, argv, keys);
 	parser.about("Train Bag of Words Model");
-
 	if (argc < 2) {
 		parser.printMessage();
 		return 1;
 	}
-
-	cv::String inputDir = parser.get<cv::String>(0);
-	cv::String bowFile = parser.get<std::string>(1);
-	cv::String pcaFile = parser.get<std::string>(2);
-
-	if (!parser.check() || inputDir.size()==0 || bowFile.size()==0) {
-		parser.printErrors();
+	if (parser.has("h")) {
+		parser.printMessage();
 		return 1;
 	}
+	cv::String inputDir = parser.get<cv::String>(0);
+	cv::String bowFile = parser.get<std::string>(1);
+	cv::String pcaFile = parser.get<std::string>("p");
+
+    if (!parser.check() || inputDir.size()==0 || bowFile.size()==0) {
+        parser.printMessage();
+        return 1;
+    }
 
 	vector<string> sfmDataFiles;
 	readSfmDataFiles(inputDir, sfmDataFiles);
@@ -204,7 +205,7 @@ int main(int argc, char* argv[]) {
 		cout << "Start PCA projection of train kmeans Vector...." << endl;
 		cv::Mat pcaKmeansTrainFeatures;
 		pcaKmeansTrainFeatures = pcaWrapper->calcPcaProject(kmeansTrainFeatures);
-		cout << "End PCA projection of train Fisher Vector...." << endl;
+		cout << "End PCA projection of train kmeans Vector...." << endl;
 
 		cout << "Start train BoF...." << endl;
 		BoFSpatialPyramids* bof = new BoFSpatialPyramids(pcaKmeansTrainFeatures, K, RESIZED_IMAGE_SIZE,
@@ -235,8 +236,20 @@ int main(int argc, char* argv[]) {
 				cerr << "Cannot load " << sfmDataFiles[i] << endl;
 				return EXIT_FAILURE;
 			}
+
+			std::vector<string> imageFiles;
+			std::vector<string> bofFiles;
 			for(Views::const_iterator iter = sfm_data.views.begin(); iter != sfm_data.views.end(); iter++){
 				string imageFile = stlplus::create_filespec(sfm_data.s_root_path,stlplus::basename_part(iter->second->s_Img_path),stlplus::extension_part(iter->second->s_Img_path));
+				string bofFile = stlplus::create_filespec(stlplus::folder_part(sfmDataFiles[i]),stlplus::basename_part(iter->second->s_Img_path),"bow");
+				imageFiles.push_back(imageFile);
+				bofFiles.push_back(bofFile);
+			}
+			CV_Assert(imageFiles.size()==bofFiles.size());
+
+#pragma omp parallel for
+			for (int j=0; j<imageFiles.size(); j++) {
+				string imageFile = imageFiles[j];
 				cout << "Calculate BoW for image : " << imageFile << endl;
 
 				std::vector<cv::KeyPoint> keypoints;
@@ -244,8 +257,9 @@ int main(int argc, char* argv[]) {
 				cv::Mat pcaDescriptors = pcaWrapper->calcPcaProject(descriptors);
 				cv::Mat bofMat = bof->calcBoF(pcaDescriptors, keypoints);
 
-				string bofFile = stlplus::create_filespec(stlplus::folder_part(sfmDataFiles[i]),stlplus::basename_part(iter->second->s_Img_path),"bow");
-				hulo::saveMat(bofFile, bofMat);
+				string bofFile = bofFiles[j];
+				//hulo::saveMat(bofFile, bofMat);
+				hulo::saveMatBin(bofFile, bofMat);
 				cout << "Saved BoW feature : " << bofFile << endl;
 			}
 		}
@@ -286,16 +300,29 @@ int main(int argc, char* argv[]) {
 				cerr << "Cannot load " << sfmDataFiles[i] << endl;
 				return EXIT_FAILURE;
 			}
+
+			std::vector<string> imageFiles;
+			std::vector<string> bofFiles;
 			for(Views::const_iterator iter = sfm_data.views.begin(); iter != sfm_data.views.end(); iter++){
 				string imageFile = stlplus::create_filespec(sfm_data.s_root_path,stlplus::basename_part(iter->second->s_Img_path),stlplus::extension_part(iter->second->s_Img_path));
+				string bofFile = stlplus::create_filespec(stlplus::folder_part(sfmDataFiles[i]),stlplus::basename_part(iter->second->s_Img_path),"bow");
+				imageFiles.push_back(imageFile);
+				bofFiles.push_back(bofFile);
+			}
+			CV_Assert(imageFiles.size()==bofFiles.size());
+
+#pragma omp parallel for
+			for (int j=0; j<imageFiles.size(); j++) {
+				string imageFile = imageFiles[j];
 				cout << "Calculate BoW for image : " << imageFile << endl;
 
 				std::vector<cv::KeyPoint> keypoints;
 				cv::Mat descriptors = denseLocalFeatureWrapper->calcDenseLocalFeature(imageFile, keypoints);
 				cv::Mat bofMat = bof->calcBoF(descriptors, keypoints);
 
-				string bofFile = stlplus::create_filespec(stlplus::folder_part(sfmDataFiles[i]),stlplus::basename_part(iter->second->s_Img_path),"bow");
-				hulo::saveMat(bofFile, bofMat);
+				string bofFile = bofFiles[j];
+				//hulo::saveMat(bofFile, bofMat);
+				hulo::saveMatBin(bofFile, bofMat);
 				cout << "Saved BoW feature : " << bofFile << endl;
 			}
 		}

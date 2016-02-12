@@ -31,6 +31,8 @@ extern void saveMat(std::string filename, cv::Mat& mat);
 extern void readMat(std::string filename, cv::Mat &mat);
 extern void saveMatBin(std::string filename, cv::Mat& mat);
 extern void readMatBin(std::string filename, cv::Mat& mat);
+extern void saveAKAZEBin(std::string filename, cv::Mat& mat);
+extern void readAKAZEBin(std::string filename, cv::Mat& mat);
 
 // export geometric map out
 extern void exportPairWiseMatches(

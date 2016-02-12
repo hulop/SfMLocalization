@@ -20,7 +20,7 @@
 # THE SOFTWARE.
 ################################################################################
 
-import sys
+import argparse
 import os
 import yajl as json
 import csv
@@ -86,14 +86,22 @@ def showKeypointMatch(matchFolder, matchFile, ind1, ind2):
     cv2.imshow("matching", cv2.resize(view, (0,0), fx=0.5, fy=0.5))
     cv2.waitKey(1)
 
-def main(argv):
-    # check arguments
-    if (len(argv) != 4):
-        print 'Usage : python %s [matches directory] [view index1] [view index2]' % argv[0]
-        quit()
-    matchFolder = argv[1]
-    ind1 = int(argv[2])
-    ind2 = int(argv[3])
+def main():
+    description = 'This script is for visualizing putative matching result created by OpenMVG. '
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('match_dir', action='store', nargs=None, const=None, \
+                        default=None, type=str, choices=None, metavar=None, \
+                        help='Directory path where matches results is stored.')
+    parser.add_argument('ind1', action='store', nargs=None, const=None, \
+                        default=None, type=int, choices=None, metavar=None, \
+                        help='view index 1.')
+    parser.add_argument('ind2', action='store', nargs=None, const=None, \
+                        default=None, type=int, choices=None, metavar=None, \
+                        help='view index 2.')
+    args = parser.parse_args()
+    matchFolder = args.match_dir
+    ind1 = args.ind1
+    ind2 = args.ind2
     
     while True:
         print "show matching images : ",ind1," <-> ",ind2
@@ -111,4 +119,4 @@ def main(argv):
             break
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()

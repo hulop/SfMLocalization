@@ -34,6 +34,7 @@ class ReconstructParam:
     EXTRACT_FEATURE_MATCH_PROJECT = "ExtFeatAndMatch"
     LOCALIZE_PROJECT = "OpenMVGLocalization_AKAZE"
     BUNDLE_ADJUSTMENT_PROJECT = "OpenMVG_BA"
+    CAMERA_DATABASE_PATH = "/usr/local/share/openMVG/cameraGenerated.txt"
     
     EXTRACT_FEATURE_MATCH_PROJECT_PATH = WORKSPACE_DIR + "/" + EXTRACT_FEATURE_MATCH_PROJECT + "/" + C_PROJECT_CONFIG + "/" + EXTRACT_FEATURE_MATCH_PROJECT
     LOCALIZE_PROJECT_PATH = WORKSPACE_DIR + "/" + LOCALIZE_PROJECT + "/" + C_PROJECT_CONFIG + "/" + LOCALIZE_PROJECT
@@ -145,8 +146,9 @@ class ReconstructParam:
     # consecutive cameras in 3D model multiplied by the following number.
     vldMergeAgrFrameThresK = 5
     
+    # This condition to check merge is removed by T. Ishihara 2015.11.10
     # ratio between number of inliers against number of agrFrame
-    vldMergeRatioInliersFileagree = 1.5
+    #vldMergeRatioInliersFileagree = 1.5
     
     # minimum number of agrFrame
     vldMergeMinCountFileAgree = 30

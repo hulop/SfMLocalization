@@ -28,12 +28,12 @@
 		<link>
 			<name>BoWCommon</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/BoWCommon/src</locationURI>
+			<location>WORKSPACE_LOC/BoWCommon/src</location>
 		</link>
 		<link>
 			<name>VisionLocalizeCommon</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/VisionLocalizeCommon/src</locationURI>
+			<location>WORKSPACE_LOC/VisionLocalizeCommon/src</location>
 		</link>
 	</linkedResources>
 </projectDescription>

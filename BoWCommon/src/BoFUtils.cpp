@@ -27,13 +27,16 @@
 void hulo::selectViewByBoF(const cv::Mat& bow, string& matchDir,
 		set<openMVG::IndexT> &viewList, openMVG::sfm::SfM_Data &sfm_data, int knn,
 		set<openMVG::IndexT> &selectedViewList) {
+	CV_Assert(knn < viewList.size());
+
 	cv::Mat bofMat;
 	for(set<openMVG::IndexT>::const_iterator iter = viewList.begin(); iter != viewList.end(); iter++){
 		openMVG::IndexT viewIndex = *iter;
 		const openMVG::sfm::View* view = sfm_data.views.at(viewIndex).get();
 		string bofFile = stlplus::create_filespec(matchDir,stlplus::basename_part(view->s_Img_path),"bow");
 		cv::Mat bofVec;
-		hulo::readMat(bofFile, bofVec);
+		//hulo::readMat(bofFile, bofVec);
+		hulo::readMatBin(bofFile, bofVec);
 		cv::transpose(bofVec, bofVec);
 		bofMat.push_back(bofVec);
 	}

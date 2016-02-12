@@ -22,12 +22,11 @@
 
 # -*- coding: utf-8 -*-
 import os
-import sys
 import hulo_file.PlyUtils as PlyUtils
     
-def main(argv):
+def main():
     PlyUtils.saveStructurePly(os.path.join("../data","sfm_data.json"), os.path.join("../data","colorized_structure.ply"))
     PlyUtils.saveCameraPly(os.path.join("../data","sfm_data.json"), os.path.join("../data","colorized_camera.ply"))
     
 if __name__ == '__main__':
-    main(sys.argv)
+    main()

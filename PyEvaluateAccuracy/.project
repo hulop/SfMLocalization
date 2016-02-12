@@ -4,6 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>PyReconstruct</project>
+		<project>PyVisionLocalizeBeaconCommon</project>
 		<project>PyVisionLocalizeCommon</project>
 	</projects>
 	<buildSpec>

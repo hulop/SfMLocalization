@@ -1,0 +1,15 @@
+{
+  "name": "VisionLocalizeServer",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "3.2.6",
+    "jade": "*",
+    "validator": "4.2.0",
+    "bindings":"1.2.1",
+    "mongodb":"2.1.2"
+  }
+}

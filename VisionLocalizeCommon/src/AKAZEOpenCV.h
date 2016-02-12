@@ -27,16 +27,15 @@
 
 #include <opencv2/opencv.hpp>
 #include <openMVG/sfm/sfm_data.hpp>
+#include <openMVG/features/regions.hpp>
 
 #include "AKAZEOption.h"
 
 namespace hulo {
 
-static const bool SAVE_DESC_BINARY = true;
-
 // extract AKAZE from one image
 // also return width and height of image
-extern void extractAKAZESingleImg(std::string &filename,
+extern std::unique_ptr<openMVG::features::Regions> extractAKAZESingleImg(std::string &filename,
 		std::string &outputFolder, const hulo::AKAZEOption &akazeOption,
 		std::vector<std::pair<float, float> > &locFeat, std::size_t &w,
 		std::size_t &h);

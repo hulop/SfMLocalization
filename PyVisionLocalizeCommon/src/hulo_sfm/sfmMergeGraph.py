@@ -146,7 +146,6 @@ class sfmGraph:
         return True
     
     # calculate graph between all pairs of model
-    # TODO : graph edges should be updated by BOW after every merge
     def calcGraph(self):
         
         print "Calculating graph edges between videos"
@@ -185,11 +184,6 @@ class sfmGraph:
                 
         # copy reconstructed image fom model2 to tmp folder
         sfm_data2 = FileUtils.loadjson(model2.sfm_dataLoc)
-        print sfm_data2["views"][0]["value"]["ptr_wrapper"]["data"]["filename"]
-        print sfm_data2["views"][0]["value"]["ptr_wrapper"]["data"]["id_view"]
-        #print model1.reconFrame
-        #print model2.reconFrame
-        print os.path.join(model2.csvFolLoc,"*")
         if not os.path.isdir(inputImgTmpFolder):
             listReconFrameName = [sfm_data2["views"][x]["value"]["ptr_wrapper"]["data"]["filename"] for x in range(0,len(sfm_data2["views"])) if sfm_data2["views"][x]["value"]["ptr_wrapper"]["data"]["id_view"] in model2.reconFrame]
             FileUtils.makedir(inputImgTmpFolder)
@@ -203,12 +197,12 @@ class sfmGraph:
 
         # localize the images from model2 on model1
         os.system(reconParam.LOCALIZE_PROJECT_PATH + \
-                  " -q=" + inputImgTmpFolder + \
-                  " -s=" + os.path.dirname(model1.sfm_dataLoc) + \
-                  " -m=" + self.mMatchesPath + \
+                  " " + inputImgTmpFolder + \
+                  " " + os.path.dirname(model1.sfm_dataLoc) + \
+                  " " + self.mMatchesPath + \
+                  " " + model2.locFolLoc + \
                   " -f=" + str(reconParam.locFeatDistRatio) + \
                   " -r=" + str(reconParam.locRansacRound) + \
-                  " -o=" + model2.locFolLoc + \
                   " -e=" + model2.csvFolLoc + \
                   " -i=" + str(reconParam.locSkipFrame))
                   
@@ -249,12 +243,18 @@ class sfmGraph:
         countFileAgree = 0
         countFileLoc = 1
         if os.path.isfile(resultSfMDataFile):
-            os.system("" + self.workspacePath + "/" + reconParam.BUNDLE_ADJUSTMENT_PROJECT + "/" + reconParam.C_PROJECT_CONFIG + "/" + reconParam.BUNDLE_ADJUSTMENT_PROJECT + \
-                      " -s=" + resultSfMDataFile + \
-                      " -o=" + resultSfMDataFile)
-            countFileLoc, countFileAgree = mergeSfM.modelMergeCheckLocal(resultSfMDataFile, model2.locFolLoc, reconParam.vldMergeAgrFrameThresK)        
+            os.system(reconParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + resultSfMDataFile + " " + resultSfMDataFile)
+            countFileLoc, countFileAgree = mergeSfM.modelMergeCheckLocal(resultSfMDataFile, model2.locFolLoc, reconParam.vldMergeAgrFrameThresK)
         else:
             sfm_merge_generated = False
+        
+        ratioAgreeFrameReconFrame = 0.0
+        if (len(model2.reconFrame)>0):
+            ratioAgreeFrameReconFrame = float(countFileAgree)/len(model2.reconFrame)
+        ratioAgreeFrameLocFrame = 0.0
+        if (countFileLoc>0):
+            ratioAgreeFrameLocFrame = float(countFileAgree)/countFileLoc
+        
         # write log file
         with open(os.path.join(self.mSfMPath,"global"+str(self.nMergedModel),"log.txt"),"a") as filelog:
             filelog.write(("M1: " + model1.name + "\n" + \
@@ -265,12 +265,15 @@ class sfmGraph:
                           "countFileAgree: " + str(countFileAgree) + "\n" + \
                           "countFileLoc: " + str(countFileLoc) + "\n" + \
                           "not sfm_merge_generated: " + str(not sfm_merge_generated) + "\n" + \
-                          "nInlierTmp > "+str(reconParam.vldMergeRatioInliersFileagree)+"*countFileAgree: " + str(nInlierTmp > reconParam.vldMergeRatioInliersFileagree*countFileAgree) + "\n" + \
+                          # obsolete condition by T. Ishihara 2015.11.10
+                          #"nInlierTmp > "+str(reconParam.vldMergeRatioInliersFileagree)+"*countFileAgree: " + str(nInlierTmp > reconParam.vldMergeRatioInliersFileagree*countFileAgree) + "\n" + \
                           "countFileAgree > "+str(reconParam.vldMergeMinCountFileAgree)+": " + str(countFileAgree > reconParam.vldMergeMinCountFileAgree) + "\n" + \
                           "countFileAgree > "+str(reconParam.vldMergeSmallMinCountFileAgree)+": " + str(countFileAgree > reconParam.vldMergeSmallMinCountFileAgree) + "\n" + \
                           "countFileLoc < countFileAgree*" +str(reconParam.vldMergeShortRatio)+ ": " + str(countFileLoc < countFileAgree*reconParam.vldMergeShortRatio) + "\n" + \
-                          "ratioLocAgree: " + str(float(countFileAgree)/len(model2.reconFrame)) + "\n" + \
-                          "passVerify: " + str(float(countFileAgree)/countFileLoc > reconParam.vldMergeRatioAgrFLocF) + "\n" + \
+                          "ratioLocAgreeWithReconFrame: " + str(ratioAgreeFrameReconFrame) + "\n" + \
+                          "ratioLocAgreeWithReconFrame > " + str(reconParam.vldMergeRatioAgrFReconF) + ": " + str(ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconF) + "\n" + \
+                          "ratioLocAgreeWithLocFrame: " + str(ratioAgreeFrameLocFrame) + "\n" + \
+                          "ratioLocAgreeWithLocFrame > " + str(reconParam.vldMergeRatioAgrFLocF) + ": " + str(ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF) + "\n" + \
                           str(M) + "\n\n"))
        
         # rename the localization folder to save localization result
@@ -278,13 +281,24 @@ class sfmGraph:
             FileUtils.removedir(model2.locFolLoc+model1.name)
         os.rename(model2.locFolLoc,model2.locFolLoc+model1.name)
 
+        # obsolete merge condition
+        '''
         if not sfm_merge_generated or \
             not (nInlierTmp > reconParam.vldMergeRatioInliersFileagree*countFileAgree and \
             ((countFileAgree > reconParam.vldMergeMinCountFileAgree or (countFileAgree > reconParam.vldMergeSmallMinCountFileAgree and countFileLoc < countFileAgree*reconParam.vldMergeShortRatio)) and \
             ((nInlierTmp > reconParam.vldMergeNInliers and float(countFileAgree)/len(model2.reconFrame) > reconParam.vldMergeRatioAgrFReconFNInliers) or float(countFileAgree)/countFileLoc > reconParam.vldMergeRatioAgrFLocF) and
             (float(countFileAgree)/len(model2.reconFrame) > reconParam.vldMergeRatioAgrFReconF))):
+        '''
+        # update merge condition by T. Ishihara 2015.11.10
+        if not sfm_merge_generated or \
+            not (countFileAgree > reconParam.vldMergeMinCountFileAgree and \
+                 countFileAgree > reconParam.vldMergeSmallMinCountFileAgree and \
+                 countFileLoc < countFileAgree*reconParam.vldMergeShortRatio and \
+                 ((nInlierTmp > reconParam.vldMergeNInliers and ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconFNInliers) or \
+                    ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconF) and \
+                 ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF):
             print "Transformed locations do not agree with localization. Skip merge between " + model1.name + " and " + model2.name + "."
-                               
+                    
             if os.path.isfile(os.path.join(sfmOutPath,"sfm_data.json")):
                 os.rename(os.path.join(sfmOutPath,"sfm_data.json"), \
                           os.path.join(sfmOutPath,"sfm_data_("+model1.name + "," + model2.name+").json"))
@@ -298,15 +312,12 @@ class sfmGraph:
             " -o " + os.path.join(sfmOutPath,"colorized_pre.ply"))        
                 
         # perform bundle adjustment
-        os.system("" + self.workspacePath + "/" + reconParam.BUNDLE_ADJUSTMENT_PROJECT + "/" + reconParam.C_PROJECT_CONFIG + "/" + reconParam.BUNDLE_ADJUSTMENT_PROJECT + \
-                  " -s=" + os.path.join(sfmOutPath,"sfm_data.json") + \
-                  " -o=" + os.path.join(sfmOutPath,"sfm_data.json") + \
-                  " -c=" + "rs,rst,rsti" + \
-                  " -r=" + "1")
+        os.system(reconParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + os.path.join(sfmOutPath,"sfm_data.json") + " " + os.path.join(sfmOutPath,"sfm_data.json") + \
+                  " -c=" + "rs,rst,rsti" + " -r=" + "1")
         
         os.system("openMVG_main_ComputeSfM_DataColor " +
             " -i " + os.path.join(sfmOutPath,"sfm_data.json") +
-            " -o " + os.path.join(sfmOutPath,"colorized.ply"))        
+            " -o " + os.path.join(sfmOutPath,"colorized.ply"))
         
         return True, sfmModel("A" + model1.name + "," + model2.name +"Z", self.mInputImgPath, self.mCsvPath, self.mMatchesPath, os.path.join(sfmOutPath,"loc"), resultSfMDataFile)
             
@@ -317,10 +328,10 @@ class sfmGraph:
             return True
         return False
     
-    # clear history of bad matches        
+    # clear history of bad matches
     def clearBadMatches(self):
-        self.badMatches = []        
-            
+        self.badMatches = []
+    
     # perform merging model
     # Input
     # image_descFile : path to image_describer.txt
@@ -330,7 +341,7 @@ class sfmGraph:
         FileUtils.makedir(self.mInputImgPath)
         FileUtils.makedir(self.mCsvPath)
         FileUtils.makedir(self.mMatchesPath)
-        FileUtils.makedir(self.mSfMPath)        
+        FileUtils.makedir(self.mSfMPath)
         
         # create symbolic links to all images, csv, and descriptor/feature files
         os.system("cp --remove-destination -s " + os.path.join(inputPath,"*","inputImg","*") + " " + self.mInputImgPath)
@@ -435,9 +446,7 @@ class sfmGraph:
                     # update graph
                     graphEdges = np.delete(graphEdges,videoIdx,0)
                     graphEdges = np.delete(graphEdges,videoIdx,1)
-                    
-                    # TODO update remaining graph edge value by BOW here
-                    
+                                        
                     self.nMergedModel = self.nMergedModel+1
                     self.save(os.path.join(self.mSfMPath,"global" + str(self.nMergedModel-1),"mergeGraph.txt"))
                     self.save(os.path.join(self.mSfMPath,"mergeGraph.txt"))

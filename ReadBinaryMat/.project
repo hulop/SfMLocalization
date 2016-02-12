@@ -28,7 +28,7 @@
 		<link>
 			<name>VisionLocalizeCommon</name>
 			<type>2</type>
-			<locationURI>WORKSPACE_LOC/VisionLocalizeCommon/src</locationURI>
+			<location>WORKSPACE_LOC/VisionLocalizeCommon/src</location>
 		</link>
 	</linkedResources>
 </projectDescription>

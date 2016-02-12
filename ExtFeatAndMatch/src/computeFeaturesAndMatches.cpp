@@ -28,6 +28,8 @@
 #include <opencv2/opencv.hpp>
 #include <openMVG/sfm/sfm_data.hpp>
 #include <openMVG/matching/indMatch_utils.hpp>
+#include <openMVG/features/regions.hpp>
+#include <openMVG/features/regions_factory.hpp>
 #include <sfm/sfm_data_io.hpp>
 
 #include "AKAZEOption.h"
@@ -39,11 +41,13 @@
 using namespace std;
 using namespace cv;
 using namespace openMVG::sfm;
+using namespace openMVG::features;
 using namespace openMVG::matching;
 using namespace hulo;
 
 const String keys =
-		"{m matchdir		||Folder of descriptor/feature/match files}"
+		"{h help 			|| print this message}"
+		"{@matchdir			||Folder of descriptor/feature/match files}"
 		"{c akazeChannel	|3|AKAZE channel}"
 		"{t akazeThreshold	|0.001|AKAZE threshold}"
 		"{o akazeNOctave	|4|AKAZE octaves}"
@@ -52,19 +56,22 @@ const String keys =
 		"{r ransacround		|4096|RANSAC round for geometric matching}"
 		"{v videoMatchFrame	|0|match using between close frames (video mode)}"
 		"{p pairfile		||pair file for matching, overwritten by tracking by matching}"
-		"{x maxFrameDist	|0|number of frame to extend match via tracking to}"
-		"{a minMatch		|60|minimum number of matches between frames to keep them connected}"
+		"{mf maxFrameDist	|0|maximum number of frame to extend match via tracking to}"
+		"{mm minMatch		|60|minimum number of matches between frames to keep them connected}"
 		"{g geomError		|4.0|geometric error}";
 
 int main(int argc, char **argv) {
-
-	// Parse arguments
 	CommandLineParser parser(argc, argv, keys);
+	parser.about("Extract feature and compute matching for all images in SfM project");
 	if (argc < 2) {
 		parser.printMessage();
 		return 1;
 	}
-	std::string sMatchesDir = parser.get<std::string>("m");
+	if (parser.has("h")) {
+		parser.printMessage();
+		return 1;
+	}
+	std::string sMatchesDir = parser.get<string>(0);
 	int akazeChannel = parser.get<int>("c");
 	float akazeThres = parser.get<float>("t");
 	int akazeNOct = parser.get<int>("o");
@@ -73,9 +80,15 @@ int main(int argc, char **argv) {
 	int ransacRound = parser.get<int>("r");
 	int videoMatchFrame = parser.get<int>("v");
 	std::string sPairFile = parser.get<std::string>("p"); // pair file for matching, overwritten by tracking by matching
-	size_t maxFrameDist = parser.get<size_t>("x"); // number of frame to extend match via tracking to
-	int minMatch = parser.get<int>("a"); // minimum number of matches between frames to keep them connected
+	size_t maxFrameDist = parser.get<size_t>("mf"); // number of frame to extend match via tracking to
+	int minMatch = parser.get<int>("mm"); // minimum number of matches between frames to keep them connected
 	int geomError = parser.get<int>("g");
+	bool bGuided_matching = false;
+
+    if (!parser.check() || sMatchesDir.size()==0) {
+        parser.printMessage();
+        return 1;
+    }
 
 	// You cannot specify more than two parameters from the three parameters (pair file, number of video frame to make pair, number of frame to track)
 	CV_Assert((sPairFile.size()==0 && videoMatchFrame==0 && maxFrameDist==0)
@@ -202,9 +215,18 @@ int main(int argc, char **argv) {
 		}
 		cout << endl;
 
+		// construct feature providers for geometric matches
+		unique_ptr<Regions> regions;
+		regions.reset(new AKAZE_Binary_Regions);
+		shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
+		if (!regions_provider->load(sfm_data, sMatchesDir, regions)) {
+			cerr << "Cannot construct regions providers," << endl;
+			return EXIT_FAILURE;
+		}
+
 		// compute geometric matches
-		hulo::geometricMatch(sfm_data, sMatchesDir, map_putativeMatches,
-				map_geometricMatches, ransacRound, geomError);
+		hulo::geometricMatch(sfm_data, regions_provider, map_putativeMatches,
+				map_geometricMatches, ransacRound, geomError, bGuided_matching);
 		hulo::exportPairWiseMatches(map_geometricMatches,
 				stlplus::create_filespec(sMatchesDir, "matches.f.txt")); // export result
 	}

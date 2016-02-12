@@ -74,3 +74,37 @@ def saveGlobalPly(inFile, Amat, outFile):
             fout.write("\n")
             
     fout.close()
+    
+def addPointToPly(inFile, points, outFile):
+    numPoints = len(points)
+    
+    foundHeader = False
+    fout = open(outFile, "w")
+    
+    with open(inFile) as f:
+        for line in f:
+            line = line.strip()
+            
+            # drop lines until find "end_header"         
+            if not foundHeader:
+                tokens = line.split()
+                if len(tokens)==3 and tokens[0]=="element" and tokens[1]=="vertex":
+                    fout.write("element vertex " + str(int(tokens[2])+numPoints) + "\n")
+                else:
+                    fout.write(line + "\n")
+                if line.lower() == "end_header":
+                    foundHeader = True
+                continue
+            
+            if len(line) == 0:
+                continue
+            
+            fout.write(line + "\n")
+    
+    for point in points:
+        for val in point:
+            fout.write(str(val) + " ")
+
+        fout.write("255 0 0\n")
+    
+    fout.close()

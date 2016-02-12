@@ -23,6 +23,7 @@
 #include <opencv2/opencv.hpp>
 #include <openMVG/sfm/sfm_data.hpp>
 #include <openMVG/sfm/sfm_data_io.hpp>
+#include <openMVG/sfm/pipelines/localization/SfM_Localizer.hpp>
 #include <openMVG/sfm/pipelines/sfm_robust_model_estimation.hpp>
 #include <openMVG/sfm/sfm_data_BA_ceres.hpp>
 #include <openMVG/sfm/sfm_data_filters.hpp>
@@ -39,33 +40,39 @@ using namespace openMVG::geometry;
 #define STRUCTURE_CLEANUP_ANGLE_ERROR 2.0
 
 const String keys =
-		"{s sfm_data		||Input sfm_data json file}"
-		"{o sfm_data_out	||Output sfm_data json file}"
-		"{c command         ||Command for order of bundle adjustment (BD) [default=no BD] [options:r = rotation, t = translation, i = intrinsic, s = structure, c = clean]. Usage example: c=r,tic,rts means BD with rotation only, then BD with translation and intrinsics follow by cleaning, then BD with rotation translation and structure.}"
-		"{r rm_unstable		|0|Remove unstable pose and observation}";
+		"{h help 			|| print this message}"
+		"{@sfm_data			||Input sfm_data json file}"
+		"{@sfm_data_out		||Output sfm_data json file}"
+		"{c command     	||Command for order of bundle adjustment (BD) [default=no BD] [options:r = rotation, t = translation, i = intrinsic, s = structure, c = clean]. Usage example: c=r,tic,rts means BD with rotation only, then BD with translation and intrinsics follow by cleaning, then BD with rotation translation and structure.}"
+		"{r rm_unstable 	|0|Remove unstable pose and observation}";
 
+//
 // 1. load sfm_data
 // 2. perform bundle adjustment
 // 2.1. solve for intrinsic
 // 2.2. solve rotation and translation
 // 3. save model
+//
 int main(int argc, char **argv) {
-	// Parse arguments
 	CommandLineParser parser(argc, argv, keys);
+	parser.about("Execute bundle adjustment for sfm_data.json");
 	if (argc < 2) {
 		parser.printMessage();
 		return 1;
 	}
-
-	string sSfM_data = parser.get<string>("s");
-	string sSfM_data_out = parser.get<string>("o");
+	if (parser.has("h")) {
+		parser.printMessage();
+		return 1;
+	}
+	string sSfM_data = parser.get<string>(0);
+	string sSfM_data_out = parser.get<string>(1);
 	string bd_command = parser.get<string>("c");
 	bool rm_unstable = parser.get<int>("r") != 0;
 
-	if (sSfM_data == "" || sSfM_data_out == "") {
-		cout << "Invalid input or output sfm_data.json";
-		return EXIT_FAILURE;
-	}
+    if (!parser.check() || sSfM_data.size()==0 || sSfM_data_out.size()==0) {
+    	parser.printMessage();
+        return 1;
+    }
 
 	cout << "Start bundle adjustment over sfm_data.json." << endl;
 
@@ -79,7 +86,6 @@ int main(int argc, char **argv) {
 	}
 
 	// list all 2D - 3D point pair for each view and adjust R,t
-	map<size_t, size_t> vecInl;
 	bool warning = false; // boolean for warning that there is view not used in reconstruction
 #pragma omp parallel for
 	for (int i = 0; i < sfm_data.views.size(); ++i) {
@@ -90,28 +96,29 @@ int main(int argc, char **argv) {
 
 		vector<Vec2> vec2D;
 		vector<Vec3> vec3D;
-
 		for (Landmarks::const_iterator iterL = sfm_data.structure.begin();
 				iterL != sfm_data.structure.end(); iterL++) {
-
 			if (iterL->second.obs.find(viewID) != iterL->second.obs.end()) {
 				Observation ob = iterL->second.obs.at(viewID);
-
 				vec2D.push_back(ob.x);
 				vec3D.push_back(iterL->second.X);
 			}
+		}
 
+		Image_Localizer_Match_Data resection_data;
+		resection_data.pt2D.resize(2, vec2D.size());
+		resection_data.pt3D.resize(3, vec3D.size());
+		for (int j=0; j<vec2D.size(); j++) {
+			resection_data.pt2D.col(j) = vec2D[j];
+			resection_data.pt3D.col(j) = vec3D[j];
 		}
 
 		// if list of match has adequate number to estimate camera
 		if (vec2D.size() > MINIMUM_VIEW_NUM_TO_ESTIMATAE_CAMERA_POSE) {
 
 			// get intrinsic
-			const Intrinsics::const_iterator iterIntrinsic_I =
-					sfm_data.GetIntrinsics().find(iterV->second->id_intrinsic);
-			Pinhole_Intrinsic *cam_I =
-					dynamic_cast<Pinhole_Intrinsic*>(iterIntrinsic_I->second.get());
-			Mat3 K = cam_I->K();
+			const Intrinsics::const_iterator iterIntrinsic_I = sfm_data.GetIntrinsics().find(iterV->second->id_intrinsic);
+			Pinhole_Intrinsic *cam_I = dynamic_cast<Pinhole_Intrinsic*>(iterIntrinsic_I->second.get());
 
 			// copy to mat
 			openMVG::Mat pt2D(2, vec2D.size());
@@ -123,18 +130,14 @@ int main(int argc, char **argv) {
 			}
 
 			// estimate R and T
-			Mat34 P;
-			vector<size_t> vec_inliers;
-			double errorMax = numeric_limits<double>::max();
-			robustResection(
-					make_pair(iterV->second->ui_width,
-							iterV->second->ui_height), pt2D, pt3D, &vec_inliers,
-					&K, &P, &errorMax);
+			geometry::Pose3 pose;
+			const bool bResection = sfm::SfM_Localizer::Localize(
+					make_pair(iterV->second->ui_width, iterV->second->ui_height),
+					cam_I, resection_data, pose);
 			Mat3 K_, R_;
 			Vec3 t_, t_out;
-			KRt_From_P(P, &K_, &R_, &t_);
+			KRt_From_P(resection_data.projection_matrix, &K_, &R_, &t_);
 			t_out = -R_.transpose() * t_;
-			vecInl[viewID] = vec_inliers.size();
 			sfm_data.poses[iterV->second->id_pose] = Pose3(R_, t_out);
 		} else {
 			warning = true;
@@ -144,12 +147,6 @@ int main(int argc, char **argv) {
 	if (warning) {
 		cout << "Warning: there is/are frames with too few matches." << endl;
 	}
-
-	for (map<size_t, size_t>::const_iterator iter = vecInl.begin();
-			iter != vecInl.end(); iter++) {
-		cout << "(" << iter->first << " " << iter->second << ") ";
-	}
-	cout << endl;
 
 	string sSfM_data_bd2 = stlplus::create_filespec(
 			stlplus::folder_part(sSfM_data), "sfm_data_b4bd", "json");

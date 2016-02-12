@@ -46,7 +46,8 @@ public:
 	~DenseLocalFeatureWrapper();
 
 	int descriptorSize();
-	cv::Mat calcDenseLocalFeature(string image, std::vector<cv::KeyPoint>& keypoints);
+	cv::Mat calcDenseLocalFeature(const string& image, std::vector<cv::KeyPoint>& keypoints);
+	cv::Mat calcDenseLocalFeature(const cv::Mat& colorImage, std::vector<cv::KeyPoint>& keypoints);
 
 private:
 	LocalFeatureType mLocalFeatureType;

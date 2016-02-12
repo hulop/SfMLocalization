@@ -80,14 +80,16 @@ int DenseLocalFeatureWrapper::descriptorSize() {
 	}
 }
 
-cv::Mat DenseLocalFeatureWrapper::calcDenseLocalFeature(string image,
+cv::Mat DenseLocalFeatureWrapper::calcDenseLocalFeature(const string& image,
 		std::vector<cv::KeyPoint>& keypoints) {
 	cv::Mat colorImage = cv::imread(image, cv::IMREAD_COLOR);
-	if (colorImage.empty()) {
-		return cv::Mat();
-	}
+	return calcDenseLocalFeature(colorImage, keypoints);
+}
 
+cv::Mat DenseLocalFeatureWrapper::calcDenseLocalFeature(const cv::Mat& image,
+		std::vector<cv::KeyPoint>& keypoints) {
 	// resize all images to fixed size
+	cv::Mat colorImage = image.clone();
 	cv::resize(colorImage, colorImage,
 			cv::Size(mResizedImageSize, mResizedImageSize), cv::INTER_CUBIC);
 

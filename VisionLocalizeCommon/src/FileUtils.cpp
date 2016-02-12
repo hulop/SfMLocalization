@@ -23,6 +23,7 @@
 #include "FileUtils.h"
 
 #include <fstream>
+#include <openMVG/features/descriptor.hpp>
 #include <openMVG/matching/indMatch_utils.hpp>
 #include "StringUtils.h"
 
@@ -70,6 +71,34 @@ void hulo::readMatBin(std::string filename, cv::Mat& mat) {
 	mat.release();
 	mat.create(rows, cols, type);
 	ifs.read((char*) (mat.data), mat.elemSize() * mat.total());
+}
+
+void hulo::saveAKAZEBin(std::string filename, cv::Mat& mat) {
+	CV_Assert(mat.type()==CV_8UC1);
+	std::vector<openMVG::features::Descriptor<unsigned char, 64>> vec_descs;
+	for (int i=0; i<mat.rows; i++) {
+		openMVG::features::Descriptor<unsigned char, 64> desc;
+		for (int j=0; j<64; j++) {
+			if (j<mat.cols) {
+				desc[j] = (int)mat.at<uchar>(i, j);
+			} else {
+				desc[j] = 0.0;
+			}
+		}
+		vec_descs.push_back(desc);
+	}
+	saveDescsToBinFile(filename, vec_descs);
+}
+
+void hulo::readAKAZEBin(std::string filename, cv::Mat& mat) {
+	std::vector<openMVG::features::Descriptor<unsigned char, 64>> vec_descs;
+	loadDescsFromBinFile(filename, vec_descs);
+	mat = cv::Mat::zeros(vec_descs.size(), 64, CV_8UC1);
+	for (int i=0; i<vec_descs.size(); i++) {
+		for (int j=0; j<vec_descs[i].size(); j++) {
+			mat.at<uchar>(i, j) = vec_descs[i][j];
+		}
+	}
 }
 
 // export geometric map out

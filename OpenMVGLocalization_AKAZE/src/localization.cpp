@@ -24,8 +24,11 @@
 #include <Eigen/Core>
 #include <sfm/sfm_data.hpp>
 #include <sfm/sfm_data_io.hpp>
+#include <openMVG/features/regions.hpp>
+#include <openMVG/features/regions_factory.hpp>
 #include <openMVG/sfm/pipelines/sfm_robust_model_estimation.hpp>
 #include <openMVG/sfm/pipelines/sfm_matches_provider.hpp>
+#include <openMVG/sfm/pipelines/localization/SfM_Localizer.hpp>
 
 #include "DenseLocalFeatureWrapper.h"
 #include "BowDenseFeatureSettings.h"
@@ -44,6 +47,7 @@ using namespace Eigen;
 using namespace openMVG;
 using namespace openMVG::sfm;
 using namespace openMVG::cameras;
+using namespace openMVG::features;
 using namespace openMVG::matching;
 using namespace hulo;
 
@@ -52,12 +56,13 @@ using namespace hulo;
 #define MINUM_NUMBER_OF_INLIER_RESECTION 10
 
 const String keys =
-		"{q query_image		||Query image file/folder}"
-		"{s sfm_data		||Folder that has sfm_data.json}"
-		"{m matchdir		||Folder of descriptor/feature/match files}"
+		"{h help 			|| print this message}"
+		"{@queryImage		||Query image file/folder}"
+		"{@sfmData			||Folder that has sfm_data.json}"
+		"{@matchdir			||Folder of descriptor/feature/match files}"
+		"{@outputFolder		||Output folder for keeping result}"
 		"{f fDistRatio		|0.6|Matching ratio}"
 		"{r ransacRound		|200|Round for RANSAC geometric matching}"
-		"{o outputFolder	||Output folder for keeping result}"
 		"{w writematch		|false|Write match files or not}"
 		"{k knnbow			|0|Nearest k neighbor by BOW}"
 		"{x cenLocX			|0.0|X location for dead reckoning}"
@@ -72,29 +77,38 @@ const String keys =
 int main(int argc, char **argv) {
 	// Parse arguments
 	CommandLineParser parser(argc, argv, keys);
+	parser.about("Execute localization for query image or folder");
 	if (argc < 2) {
 		parser.printMessage();
 		return 1;
 	}
-	string sQueryImg = parser.get<string>("q");
+	if (parser.has("h")) {
+		parser.printMessage();
+		return 1;
+	}
+	string sQueryImg = parser.get<string>(0);
+	string sSfMDir = parser.get<string>(1);
+	string sMatchesDir = parser.get<string>(2);
+	string sOutputFolder = parser.get<string>(3);
 	float fDistRatio = parser.get<float>("f");
 	int ransacRound = parser.get<int>("r");
-	string sOutputFolder = parser.get<string>("o");
-	string sSfMDir = parser.get<string>("s");
-	string sMatchesDir = parser.get<string>("m");
 	bool bWriteMatchFile = parser.get<bool>("w");
 	int knnbow = parser.get<int>("k");
 	double cenLocX = parser.get<double>("x");
 	double cenLocY = parser.get<double>("y");
 	double cenLocZ = parser.get<double>("z");
 	double cenRadius = parser.get<double>("d");
-	if (cenRadius == -1.0) {
-		cenRadius = numeric_limits<double>().max();
-	}
 	string bowFile = parser.get<string>("a");
 	string pcaFile = parser.get<string>("p");
 	int locEvryNFrame = parser.get<int>("i");
 	double geomPrec = parser.get<double>("g");
+	bool bGuided_matching = false;
+
+    if (!parser.check() || sQueryImg.size()==0 || sSfMDir.size()==0
+    		|| sMatchesDir.size()==0 || sOutputFolder.size()==0) {
+        parser.printMessage();
+        return 1;
+    }
 
 	cout << "Start localizing input image." << endl;
 	double start = (double) getTickCount();
@@ -178,6 +192,15 @@ int main(int argc, char **argv) {
 		locEvryNFrame = 1;
 	}
 
+	// construct feature providers for geometric matches
+	unique_ptr<Regions> regions;
+	regions.reset(new AKAZE_Binary_Regions);
+	shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
+	if (!regions_provider->load(sfm_data, sMatchesDir, regions)) {
+		cerr << "Cannot construct regions providers," << endl;
+		return EXIT_FAILURE;
+	}
+
 	// iterate thru image
 	int imageNumber = 0;
 	int matchNextNFrame = 0;
@@ -199,10 +222,12 @@ int main(int argc, char **argv) {
 		double imstart = (double) getTickCount();
 		sQueryImg = *iterFile;
 
-		string sQueryImgNoExt = sQueryImg.substr(0,
-				sQueryImg.find_last_of('.'));
-		string sQueryImgMatchDir = stlplus::create_filespec(sMatchesDir,
-				stlplus::basename_part(sQueryImg));
+		string sQueryImgNoExt = sQueryImg.substr(0, sQueryImg.find_last_of('.'));
+		string sQueryImgMatchDir = stlplus::create_filespec(sMatchesDir, stlplus::basename_part(sQueryImg));
+		if (stlplus::folder_exists(sQueryImgMatchDir)) {
+			stlplus::folder_delete(sQueryImgMatchDir, true);
+		}
+		stlplus::folder_create(sQueryImgMatchDir);
 
 		///////////////////////////////////////
 		// Extract features from query image //
@@ -217,7 +242,7 @@ int main(int argc, char **argv) {
 
 		size_t qImgH, qImgW;
 		vector<pair<float, float>> qFeatLoc;
-		hulo::extractAKAZESingleImg(sQueryImg, sMatchesDir, akazeOption, qFeatLoc, qImgW, qImgH);
+		unique_ptr<Regions> queryRegions = hulo::extractAKAZESingleImg(sQueryImg, sQueryImgMatchDir, akazeOption, qFeatLoc, qImgW, qImgH);
 		double endFeat = (double) getTickCount();
 		/////////////////////////////////////////
 		// Match features to those in SfM file //
@@ -227,11 +252,19 @@ int main(int argc, char **argv) {
 		// return localViews with viewID of views that are close to image
 		// this must be done before adding query image to sfm_data
 		set<IndexT> localViews;
-		hulo::getLocalViews(sfm_data, cenLoc, cenRadius, localViews);
+		if (cenRadius>0) {
+			hulo::getLocalViews(sfm_data, cenLoc, cenRadius, localViews);
+		} else {
+			for (Views::const_iterator iter = sfm_data.views.begin(); iter != sfm_data.views.end(); iter++) {
+				if (sfm_data.poses.find(iter->second->id_pose) != sfm_data.poses.end()) {
+					localViews.insert(iter->first);
+				}
+			}
+		}
 		cout << "number of selected local views by center location : " << localViews.size() << endl;
 		double endFindLocalViews = (double) getTickCount();
 
-		if (bowFile != "" && (int) knnbow > 0) {
+		if (bowFile != "" && knnbow > 0 && localViews.size() > knnbow) {
 			cv::Mat bofMat;
 			if (pcaFile != "") {
 				vector<cv::KeyPoint> keypoints;
@@ -262,6 +295,7 @@ int main(int argc, char **argv) {
 				make_pair(indQueryFile,
 						make_shared<View>(stlplus::basename_part(sQueryImg),
 								indQueryFile, 0, 0, qImgW, qImgH)));
+		regions_provider->regions_per_view[indQueryFile] = std::move(queryRegions);
 		cout << "image # " << imageNumber << "/" << listImage.size() << endl;
 		cout << "query ind: " << indQueryFile << endl;
 		cout << "fileLoc:" << sfm_data.views.at(indQueryFile)->s_Img_path
@@ -282,11 +316,10 @@ int main(int argc, char **argv) {
 		// perform putative matching
 		PairWiseMatches map_putativeMatches;
 		map<pair<size_t, size_t>, map<size_t, int>> featDist;
-		hulo::matchAKAZEToQuery(sfm_data, sMatchesDir, pairs, indQueryFile, fDistRatio, map_putativeMatches, featDist);
-		//matchAKAZE3DToQuery(sfm_data,sMatchesDir,indQueryFile, fDistRatio, map_putativeMatches, localViews);
+		hulo::matchAKAZEToQuery(sfm_data, sMatchesDir, sQueryImgMatchDir, pairs, indQueryFile, fDistRatio, map_putativeMatches, featDist);
 		if (bWriteMatchFile) {
 			hulo::exportPairWiseMatches(map_putativeMatches,
-					stlplus::create_filespec(sMatchesDir,
+					stlplus::create_filespec(sQueryImgMatchDir,
 							"matches.putativeQ.txt")); // export result
 		}
 		// the indices in above image is based on vec_fileNames, not Viewf from sfm_data!!!
@@ -309,6 +342,7 @@ int main(int argc, char **argv) {
 
 			// remove added image from sfm_data
 			sfm_data.views.erase(indQueryFile);
+			regions_provider->regions_per_view.erase(indQueryFile);
 
 			// print time
 			double end = (double) getTickCount();
@@ -330,8 +364,8 @@ int main(int argc, char **argv) {
 
 		//// compute geometric matches
 		PairWiseMatches map_geometricMatches;
-		geometricMatch(sfm_data, sMatchesDir, map_putativeMatches,
-				map_geometricMatches, ransacRound, geomPrec);
+		geometricMatch(sfm_data, regions_provider, map_putativeMatches,
+				map_geometricMatches, ransacRound, geomPrec, bGuided_matching);
 		if (bWriteMatchFile) {
 			hulo::exportPairWiseMatches(map_geometricMatches,
 					stlplus::create_filespec(sMatchesDir, "matches.fQ.txt")); // export result
@@ -355,17 +389,17 @@ int main(int argc, char **argv) {
 		QFeatTo3DFeat mapFeatTo3DFeat;
 		hulo::matchProviderToMatchSet(matches_provider, mapViewFeatTo3D, mapFeatTo3DFeat, featDist);
 		cout << "mapFeatTo3DFeat size = " << mapFeatTo3DFeat.size() << endl;
+
 		// matrices for saving 2D points from query image and 3D points from reconstructed model
-		openMVG::Mat pt2D(2, mapFeatTo3DFeat.size());
-		openMVG::Mat pt3D(3, mapFeatTo3DFeat.size());
+		Image_Localizer_Match_Data resection_data;
+		resection_data.pt2D.resize(2, mapFeatTo3DFeat.size());
+		resection_data.pt3D.resize(3, mapFeatTo3DFeat.size());
 
 		// get intrinsic
 		const Intrinsics::const_iterator iterIntrinsic_I =
 				sfm_data.GetIntrinsics().find(0);
 		Pinhole_Intrinsic *cam_I =
 				dynamic_cast<Pinhole_Intrinsic*>(iterIntrinsic_I->second.get());
-		Mat3 K = cam_I->K();
-		cout << "K = " << K << endl;
 
 		// copy data to matrices
 		size_t cpt = 0;
@@ -373,34 +407,33 @@ int main(int argc, char **argv) {
 				iterfeatId != mapFeatTo3DFeat.end(); ++iterfeatId, ++cpt) {
 
 			// copy 3d location
-			pt3D.col(cpt) = sfm_data.GetLandmarks().at(iterfeatId->second).X;
+			resection_data.pt3D.col(cpt) = sfm_data.GetLandmarks().at(iterfeatId->second).X;
 
 			// copy 2d location
 			const Vec2 feat = { qFeatLoc[iterfeatId->first].first,
 					qFeatLoc[iterfeatId->first].second };
-			pt2D.col(cpt) = cam_I->get_ud_pixel(feat);
+			resection_data.pt2D.col(cpt) = cam_I->get_ud_pixel(feat);
 		}
 		cout << "cpt = " << cpt << endl;
 
 		// perform resection
-		vector<size_t> vec_inliers;
-		Mat34 P;
 		double errorMax = numeric_limits<double>::max();
 		bool bResection = false;
 		if (cpt > MINUM_NUMBER_OF_POINT_RESECTION) {
-			bResection = robustResection(make_pair(qImgH, qImgW), pt2D, pt3D,
-					&vec_inliers, &K, &P, &errorMax);
+			geometry::Pose3 pose;
+			bResection = sfm::SfM_Localizer::Localize(make_pair(qImgH, qImgW), cam_I, resection_data, pose);
 		}
 
-		if (!bResection || vec_inliers.size() <= MINUM_NUMBER_OF_INLIER_RESECTION) {
+		if (!bResection || resection_data.vec_inliers.size() <= MINUM_NUMBER_OF_INLIER_RESECTION) {
 			cout << "Fail to estimate camera matrix" << endl;
 
 			// remove added image from sfm_data
 			sfm_data.views.erase(indQueryFile);
+			regions_provider->regions_per_view.erase(indQueryFile);
 
 			// print time
 			double end = (double) getTickCount();
-			cout << "#inliers = " << vec_inliers.size() << endl;
+			cout << "#inliers = " << resection_data.vec_inliers.size() << endl;
 			cout << "Read sfm_data: "
 					<< (endReadSfm_data - start) / getTickFrequency() << " s\n";
 			cout << "Load img + cal feat: "
@@ -422,10 +455,10 @@ int main(int argc, char **argv) {
 
 		Mat3 K_, R_;
 		Vec3 t_, t_out;
-		KRt_From_P(P, &K_, &R_, &t_);
+		KRt_From_P(resection_data.projection_matrix, &K_, &R_, &t_);
 		t_out = -R_.transpose() * t_;
-		cout << "#inliers = " << vec_inliers.size() << endl;
-		cout << "P = " << endl << P << endl;
+		cout << "#inliers = " << resection_data.vec_inliers.size() << endl;
+		cout << "P = " << endl << resection_data.projection_matrix << endl;
 		cout << "K = " << endl << K_ << endl;
 		cout << "R = " << endl << R_ << endl;
 		cout << "t = " << endl << t_ << endl;
@@ -468,12 +501,12 @@ int main(int argc, char **argv) {
 				os << "\t\"R\": " << R_.format(matFormat) << "," << endl;
 				os << "\t\"t\": " << t_out.format(vecFormat) << "," << endl;
 				os << "\t\"pair\": [";
-				for (vector<size_t>::const_iterator iterW = vec_inliers.begin();
-						iterW != vec_inliers.end(); ++iterW) {
+				for (vector<size_t>::const_iterator iterW = resection_data.vec_inliers.begin();
+						iterW != resection_data.vec_inliers.end(); ++iterW) {
 					pair<size_t, size_t> pairM = *(mapFeatTo3DFeat.begin()
 							+ *iterW);
 					os << "[" << pairM.first << "," << pairM.second << "]";
-					if (iterW + 1 != vec_inliers.end()) {
+					if (iterW + 1 != resection_data.vec_inliers.end()) {
 						os << ",";
 					}
 				}
@@ -491,6 +524,7 @@ int main(int argc, char **argv) {
 
 		// remove added image from sfm_data
 		sfm_data.views.erase(indQueryFile);
+		regions_provider->regions_per_view.erase(indQueryFile);
 
 		// if localization reach this part, it means a localization is found,
 		// hence we will localize locEvryNFrame frames after this frame

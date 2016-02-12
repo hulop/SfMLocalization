@@ -27,6 +27,7 @@
 
 #include <openMVG/sfm/sfm_data.hpp>
 #include <openMVG/matching/indMatch.hpp>
+#include <openMVG/sfm/pipelines/sfm_regions_provider.hpp>
 
 namespace hulo {
 
@@ -51,6 +52,7 @@ extern void trackAKAZE(const openMVG::sfm::SfM_Data &sfm_data,
 // matches : list of matches for each pair
 extern void matchAKAZEToQuery(const openMVG::sfm::SfM_Data &sfm_data,
 		const std::string &sMatchesDir,
+		const std::string &sQueryMatchesDir,
 		const std::vector<std::size_t> &pairs, // list of viewID to match to
 		const std::size_t queryInd, // index of query
 		const float fDistRatio, openMVG::matching::PairWiseMatches &matches,
@@ -61,21 +63,11 @@ extern void matchAKAZEToQuery(const openMVG::sfm::SfM_Data &sfm_data,
 // use openMVG function
 // inputting sfm_data instead of list of files because also need size of each image
 extern void geometricMatch(openMVG::sfm::SfM_Data &sfm_dataFull, // list of file names
-		const std::string &matchesDir, // location of .feat files
+		std::shared_ptr<openMVG::sfm::Regions_Provider> regions_provider, // keypoint information
 		openMVG::matching::PairWiseMatches &map_putativeMatches, // reference to putative matches
 		openMVG::matching::PairWiseMatches &map_geometricMatches, // reference to output
 		int ransacRound, // number of ransacRound
-		double geomPrec //precision of geometric matching
-		);
-
-// match pairs from a list to a query file
-// sfm_data : list of filenames of descriptor file
-// pairs : list of pairs to match
-// matches : list of matches for each pair
-extern void matchAKAZE3DToQuery(const openMVG::sfm::SfM_Data &sfm_data,
-		const std::string &sMatchesDir,
-		int qIndex, // index of query image in sfm_data
-		const float fDistRatio, openMVG::matching::PairWiseMatches &matches,
-		std::set<openMVG::IndexT> &localViews);
+		double geomPrec, //precision of geometric matching
+		bool bGuided_matching);
 
 }

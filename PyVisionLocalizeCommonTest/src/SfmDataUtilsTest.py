@@ -22,14 +22,13 @@
 
 # -*- coding: utf-8 -*-
 import os
-import sys
 import hulo_file.SfmDataUtils as SfmDataUtils
-    
-def main(argv):
+
+def main():
     SfmDataUtils.saveGlobalSfM(os.path.join("../data","sfm_data.json"), os.path.join("../data","Amat.txt"), os.path.join("../data","sfm_data_global.json"))
     
     os.system("openMVG_main_ComputeSfM_DataColor -i " + os.path.join("../data","sfm_data.json") + " -o " + os.path.join("../data","sfm_data.ply"))
     os.system("openMVG_main_ComputeSfM_DataColor -i " + os.path.join("../data","sfm_data_global.json") + " -o " + os.path.join("../data","sfm_data_global.ply"))
     
 if __name__ == '__main__':
-    main(sys.argv)
+    main()

@@ -25,13 +25,16 @@
 
 #include <fstream>
 
+#include <openMVG/features/regions_factory.hpp>
+
 using namespace std;
 using namespace cv;
 using namespace openMVG::sfm;
+using namespace openMVG::features;
 
 // extract AKAZE from one image
 // also return width and height of image
-void hulo::extractAKAZESingleImg(string &filename, string &outputFolder,
+unique_ptr<Regions> hulo::extractAKAZESingleImg(string &filename, string &outputFolder,
 		const AKAZEOption &akazeOption, vector<pair<float, float>> &locFeat,
 		size_t &w, size_t &h) {
 
@@ -80,16 +83,10 @@ void hulo::extractAKAZESingleImg(string &filename, string &outputFolder,
 			fileFeat.close();
 
 			// write descriptor to file
-			if (SAVE_DESC_BINARY) {
-				fileDesc.release();
-				hulo::saveMatBin(sDesc, desc);
-			} else {
-				fileDesc << "Descriptors" << desc;
-				fileDesc.release();
-			}
+			fileDesc.release();
+			hulo::saveAKAZEBin(sDesc, desc);
 		} else {
-			cerr << "cannot open file to write features for " << filebase
-					<< endl;
+			cerr << "cannot open file to write features for " << filebase << endl;
 		}
 	} else {
 		// read feature to fill locFeat
@@ -105,6 +102,14 @@ void hulo::extractAKAZESingleImg(string &filename, string &outputFolder,
 			locFeat.push_back(make_pair(x, y));
 		}
 	}
+
+	unique_ptr<Regions> region_type;
+	region_type.reset(new AKAZE_Binary_Regions);
+	std::unique_ptr<Regions> regions(region_type->EmptyClone());
+	if (!regions->Load(sFeat, sDesc)) {
+		cout << "cannot load region from the written feature file" << endl;
+	}
+	return regions;
 }
 
 // extract AKAZE from all images listed in SfM data file
@@ -169,13 +174,8 @@ void hulo::extractAKAZE(const SfM_Data &sfm_data, string &outFolder,
 				fileFeat.close();
 
 				// write descriptor to file
-				if (SAVE_DESC_BINARY) {
-					fileDesc.release();
-					hulo::saveMatBin(descFiles[i], desc);
-				} else {
-					fileDesc << "Descriptors" << desc;
-					fileDesc.release();
-				}
+				fileDesc.release();
+				hulo::saveAKAZEBin(descFiles[i], desc);
 			} else {
 				cerr << "cannot open file to write features for "
 						<< imageFiles[i] << endl;

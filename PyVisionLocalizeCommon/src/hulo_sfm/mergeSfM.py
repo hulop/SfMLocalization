@@ -180,6 +180,17 @@ def get3DPointloc(sfm_data, listID):
         
     return list3D
 
+# get all 3D points location given sfm_data 
+def getAll3DPointloc(sfm_data):
+    listKey = []
+    list3D = []
+    
+    for structure in sfm_data["structure"]:
+        listKey.append(structure["key"])
+        list3D.append(structure["value"]["X"])
+    
+    return listKey, list3D
+
 # get camera location given sfm_data and list of viewIDs
 def get3DViewloc(sfm_data, listID):
     listLoc = []
@@ -308,9 +319,29 @@ def ransacAffineTransform(A, B, thres, ransacRound, svdRatio=sys.float_info.max)
     print "Number of ransac inliers: " + str(nInliers)
     return M, inliers
 
+# transform coordinate of sfm_data with M as transformation matrix
+def transform_sfm_data(sfm_data, M):
+    
+    for extKey in range(0,len(sfm_data['extrinsics'])):
+        # transform rotation
+        matRot = np.asarray(sfm_data['extrinsics'][extKey]['value']['rotation'])
+        nmatRot = np.dot(M[:,0:3], matRot)
+        sfm_data['extrinsics'][extKey]['value']['rotation'] = np.ndarray.tolist(nmatRot)
+                
+        # transform center
+        vCenter = np.asarray(sfm_data['extrinsics'][extKey]['value']['center'])
+        nvCenter = np.dot(M[:,0:3],vCenter) + M[:,3]
+        sfm_data['extrinsics'][extKey]['value']['center'] = np.ndarray.tolist(nvCenter)
+        
+    for strKey in range(0,len(sfm_data['structure'])):
+        # transform 3d coordinate
+        X = np.asarray(sfm_data['structure'][strKey]['value']['X'])
+        nX = np.dot(M[:,0:3],X) + M[:,3]
+        sfm_data['structure'][strKey]['value']['X'] = np.ndarray.tolist(nX)
+
 # merge sfm_dataB into sfm_dataA with M as transformation matrix
 # inlierMapBA maps key key of 3D pt of model B to that of model A
-def merge_sfm_data(sfm_dataA, sfm_dataB, M, inlierMapBA):    
+def merge_sfm_data(sfm_dataA, sfm_dataB, M, inlierMapBA, sfmViewBeaconDataA=None, sfmViewBeaconDataB=None):    
     
     # note that use the same intrinsics parameters as sfm_dataA
     
@@ -327,10 +358,14 @@ def merge_sfm_data(sfm_dataA, sfm_dataB, M, inlierMapBA):
         view['value']['ptr_wrapper']['data']['id_view'] = firstViewB + view['value']['ptr_wrapper']['data']['id_view']
         view['value']['ptr_wrapper']['data']['id_pose'] = firstViewB + view['value']['ptr_wrapper']['data']['id_pose']
         sfm_dataA['views'].append(view)
-    
+        
+        # merge beacon data if specified
+        if sfmViewBeaconDataA is not None and sfmViewBeaconDataB is not None:
+            sfmViewBeaconDataA[len(sfm_dataA['views'])-1] = sfmViewBeaconDataB[viewKey]
+            
     # load transformation matrix
-    Minv = np.linalg.inv(np.vstack((M,np.asarray([0,0,0,1]))))
-    Minv = Minv[0:3,:]
+    #Minv = np.linalg.inv(np.vstack((M,np.asarray([0,0,0,1]))))
+    #Minv = Minv[0:3,:]
     
     # merge extrinsics
     for extKey in range(0,len(sfm_dataB['extrinsics'])):
