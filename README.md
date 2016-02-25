@@ -13,6 +13,18 @@ Pre-Requisites
 - [py-yajl 0.3.5](https://pypi.python.org/pypi/yajl)  (BSD License)
 - [matplotlib 1.4.3](http://matplotlib.org/)  (Python License 2)
 
+Additional Pre-Requisites for Server Side Localization
+----
+- [Node.js 0.10.25](https://nodejs.org/)  (MIT License)
+- [express 3.2.6](http://expressjs.com/)  (MIT License)
+- [jade 1.11](http://jade-lang.com/)  (MIT License)
+- [validator 4.2.0](https://www.npmjs.com/package/validator)  (MIT License)
+- [bindings 1.2.1](https://www.npmjs.com/package/bindings)  (MIT License)
+
+Additional Pre-Requisites for Visualization
+----
+- [jQuery 1.11.2](https://jquery.com/)  (MIT License)
+- [three.js r73](http://threejs.org/)  (MIT License)
 
 ## About
 ----
