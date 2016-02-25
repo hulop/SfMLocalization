@@ -2,7 +2,7 @@
 
 Pre-Requisites
 ----
-- [OpenMVG 0.8.1](https://github.com/openMVG/openMVG/)  (MPL License)
+- [OpenMVG 0.9](https://github.com/openMVG/openMVG/)  (MPL License)
 - [OpenCV 3.0](http://opencv.org/)  (BSD License)
 - [STLplus 3.8](http://stlplus.sourceforge.net/)  (BSD License)
 - [cereal 1.1.1](http://uscilab.github.io/cereal/)  (BSD License)
