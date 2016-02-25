@@ -29,4 +29,7 @@ class LocalizeBOWParam:
     
     # Number of knn selected via BOW similarity for localization
     # OpenMVGLocalization_AKAZE option -k
-    locKNNnum = 200
+    # parameter for version 0.2
+    #locKNNnum = 200
+    # modified 2016.02.12
+    locKNNnum = 20

@@ -254,14 +254,15 @@ int main(int argc, char **argv) {
 		set<IndexT> localViews;
 		if (cenRadius>0) {
 			hulo::getLocalViews(sfm_data, cenLoc, cenRadius, localViews);
+			cout << "number of selected local views by center location : " << localViews.size() << endl;
 		} else {
 			for (Views::const_iterator iter = sfm_data.views.begin(); iter != sfm_data.views.end(); iter++) {
 				if (sfm_data.poses.find(iter->second->id_pose) != sfm_data.poses.end()) {
 					localViews.insert(iter->first);
 				}
 			}
+			cout << "number of views in SfM data : " << localViews.size() << endl;
 		}
-		cout << "number of selected local views by center location : " << localViews.size() << endl;
 		double endFindLocalViews = (double) getTickCount();
 
 		if (bowFile != "" && knnbow > 0 && localViews.size() > knnbow) {

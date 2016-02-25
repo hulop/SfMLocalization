@@ -46,7 +46,10 @@ static const int RANSAC_ROUND = 25;
 static const double RANSAC_PRECISION = 4.0;
 static const bool GUIDED_MATCHING = false;
 static const int BEACON_KNN_NUM = 400; // set 0 if you do not want to use BOW
-static const int BOW_KNN_NUM = 200; // set 0 if you do not want to use BOW
+// setting for version 0.2
+//static const int BOW_KNN_NUM = 200; // set 0 if you do not want to use BOW
+// modified 2016.02.16
+static const int BOW_KNN_NUM = 20; // set 0 if you do not want to use BOW
 
 static const std::string TMP_DIR = "/tmp/vision-localize-server";
 

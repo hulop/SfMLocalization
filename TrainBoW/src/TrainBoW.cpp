@@ -51,9 +51,12 @@ static const int K = 100;
 static const int PCA_DIM = 32;
 static const BoFSpatialPyramids::NormBofFeatureType NORM_BOF_FEATURE_TYPE = BoFSpatialPyramids::L1_NORM_SQUARE_ROOT;
 static const bool USE_SPATIAL_PYRAMID = true;
-static const int PYRAMID_LEVEL = 3;
+static const int PYRAMID_LEVEL = 2;
 ////////////	end settings			///////
 
+//
+// find sfm_data.json in matches folder to list input images
+//
 void readSfmDataFiles(const string dir, vector<string>& sfmDataFiles) {
 	if (!stlplus::is_folder(dir)) {
 		return;
@@ -61,26 +64,29 @@ void readSfmDataFiles(const string dir, vector<string>& sfmDataFiles) {
 
 	vector<string> files = stlplus::folder_files(dir);
 	for (int i = 0; i < files.size(); i++) {
-		vector<string> parendDirs = stlplus::folder_elements(dir);
-		if (parendDirs.size()>0 && parendDirs[parendDirs.size()-1]=="matches" && stlplus::filename_part(files[i])=="sfm_data.json") {
+		vector<string> parentDirs = stlplus::folder_elements(dir);
+		if (parentDirs.size()>0 && parentDirs[parentDirs.size()-1]=="matches" && stlplus::filename_part(files[i])=="sfm_data.json") {
 			sfmDataFiles.push_back(stlplus::create_filespec(dir, files[i]));
 		}
 	}
-	/*
-	// folders named as number cannot be listed by stlplus function
-	vector<string> subDirs = stlplus::folder_subdirectories(dir);
-	for (int i = 0; i < subDirs.size(); i++) {
-		readSfmDataFiles(stlplus::create_filespec(dir, subDirs[i]), sfmDataFiles);
-	}
-	*/
-	// list folders by using Linux function
-	DIR *dirObj = opendir(dir.c_str());
-	for (dirent* dirEntry = readdir(dirObj); dirEntry; dirEntry = readdir(dirObj)) {
-		std::string strEntry = dirEntry->d_name;
-		if (strEntry.compare(".")!=0 && strEntry.compare("..")!=0) {
-			string strEntryPath = stlplus::create_filespec(dir, strEntry);
-			if (stlplus::is_folder(strEntryPath)) {
-				readSfmDataFiles(strEntryPath, sfmDataFiles);
+	vector<string> parentDirs = stlplus::folder_elements(dir);
+	if (parentDirs.size()>0 && parentDirs[parentDirs.size()-1]!="matches") {
+		/*
+		// folders named as number cannot be listed by stlplus function
+		vector<string> subDirs = stlplus::folder_subdirectories(dir);
+		for (int i = 0; i < subDirs.size(); i++) {
+			readSfmDataFiles(stlplus::create_filespec(dir, subDirs[i]), sfmDataFiles);
+		}
+		*/
+		// list folders by using Linux function
+		DIR *dirObj = opendir(dir.c_str());
+		for (dirent* dirEntry = readdir(dirObj); dirEntry; dirEntry = readdir(dirObj)) {
+			std::string strEntry = dirEntry->d_name;
+			if (strEntry.compare(".")!=0 && strEntry.compare("..")!=0) {
+				string strEntryPath = stlplus::create_filespec(dir, strEntry);
+				if (stlplus::is_folder(strEntryPath)) {
+					readSfmDataFiles(strEntryPath, sfmDataFiles);
+				}
 			}
 		}
 	}

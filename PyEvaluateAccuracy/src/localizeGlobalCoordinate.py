@@ -61,6 +61,9 @@ def main():
     parser.add_argument('-t', '--test-project-dir', action='store', nargs='?', const=None, \
                         default=None, type=str, choices=None, metavar=None, \
                         help='Directory path where localization test image files are located.')
+    parser.add_argument('-o', '--output-json-filename', action='store', nargs='?', const=None, \
+                        default='loc_global.json', type=str, choices=None, metavar=None, \
+                        help='Output localization result json filename.')
     parser.add_argument('--bow', action='store_true', default=False, \
                         help='Use BOW to accelerate localization if this flag is set (default: False)')    
     parser.add_argument('--beacon', action='store_true', default=False, \
@@ -70,6 +73,7 @@ def main():
     matches_dir = args.matches_dir
     sfm_data_dir = args.sfm_data_dir
     test_project_dir = args.test_project_dir
+    output_json_filename = args.output_json_filename
     USE_BOW = args.bow
     USE_BEACON = args.beacon
     
@@ -220,6 +224,10 @@ def main():
     if test_project_dir:
         for testFolder in sorted(os.listdir(test_project_dir)):
             TEST_DIR = os.path.join(test_project_dir,testFolder)
+            
+            if not os.path.exists(os.path.join(TEST_DIR,"inputImg")):
+                continue
+            
             TEST_FOLDER_LOC = os.path.join(TEST_DIR,"loc")
             if not os.path.isfile(os.path.join(TEST_FOLDER_LOC,"center.txt")):
                 
@@ -313,7 +321,7 @@ def main():
                     locGlobalJsonObj["locGlobal"].append(jsonLoc)
                     
                     locGlobalPoints.append(jsonLoc["t"])
-            with open(os.path.join(TEST_FOLDER_LOC,"loc_global.json"),"w") as jsonfile:
+            with open(os.path.join(TEST_FOLDER_LOC, output_json_filename),"w") as jsonfile:
                 json.dump(locGlobalJsonObj, jsonfile)
             
             # save localization results to ply file

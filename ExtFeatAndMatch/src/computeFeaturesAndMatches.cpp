@@ -58,7 +58,8 @@ const String keys =
 		"{p pairfile		||pair file for matching, overwritten by tracking by matching}"
 		"{mf maxFrameDist	|0|maximum number of frame to extend match via tracking to}"
 		"{mm minMatch		|60|minimum number of matches between frames to keep them connected}"
-		"{g geomError		|4.0|geometric error}";
+		"{g geomError		|4.0|geometric error}"
+		"{sm skipMathing	|false|run only feature extraction and skip matching}";
 
 int main(int argc, char **argv) {
 	CommandLineParser parser(argc, argv, keys);
@@ -83,6 +84,7 @@ int main(int argc, char **argv) {
 	size_t maxFrameDist = parser.get<size_t>("mf"); // number of frame to extend match via tracking to
 	int minMatch = parser.get<int>("mm"); // minimum number of matches between frames to keep them connected
 	int geomError = parser.get<int>("g");
+	bool bSkipMatching = parser.get<bool>("sm");
 	bool bGuided_matching = false;
 
     if (!parser.check() || sMatchesDir.size()==0) {
@@ -137,6 +139,11 @@ int main(int argc, char **argv) {
 
 	// extract features
 	hulo::extractAKAZE(sfm_data, sMatchesDir, akazeOption);
+
+	if (bSkipMatching) {
+		cout << "Skip matching option is set. Exit without feature matching." << endl;
+		return 1;
+	}
 
 	// perform putative matching
 	cout << "Start Putative Matching..." << endl;

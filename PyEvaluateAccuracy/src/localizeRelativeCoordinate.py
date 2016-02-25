@@ -83,6 +83,10 @@ def main():
     # start localize test
     for testFolder in sorted(os.listdir(test_project_dir)):
         TEST_DIR = os.path.join(test_project_dir,testFolder)
+        
+        if not os.path.exists(os.path.join(TEST_DIR,"inputImg")):
+            continue
+        
         TEST_FOLDER_LOC = os.path.join(TEST_DIR,"loc")
         if not os.path.isfile(os.path.join(TEST_FOLDER_LOC,"center.txt")):
             

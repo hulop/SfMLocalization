@@ -61,6 +61,7 @@ def copyOriginalFiles(inputDir, outputDir):
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Input","*","csv","*") + " " + os.path.join(outputDir,"Input","csv"))
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","*","matches","*.desc") + " " + os.path.join(outputDir,"Output","matches"))
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","*","matches","*.feat") + " " + os.path.join(outputDir,"Output","matches"))
+    os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","final","Output","matches","image_describer.txt") + " " + os.path.join(outputDir,"Output","matches"))    
 
 #
 # find inliers when transforming model B to model A
@@ -236,6 +237,8 @@ def main():
         with open(os.path.join(output_dir,"Output","matches","sfm_data.json"),"w") as fpw:
             json.dump(sfmData, fpw)
     
+    print "Execute : " + reconstructParam.WORKSPACE_DIR + "/TrainBoW/Release/TrainBoW " + os.path.join(output_dir,"Output") + " " + \
+              os.path.join(output_dir,"Output", "matches", "BOWfile.yml") + " -p=" + os.path.join(output_dir,"Output", "matches", "PCAfile.yml")
     os.system(reconstructParam.WORKSPACE_DIR + "/TrainBoW/Release/TrainBoW " + os.path.join(output_dir,"Output") + " " + \
               os.path.join(output_dir,"Output", "matches", "BOWfile.yml") + " -p=" + os.path.join(output_dir,"Output", "matches", "PCAfile.yml"))
     

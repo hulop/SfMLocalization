@@ -62,6 +62,7 @@ void BoFSpatialPyramids::write(cv::FileStorage& fs) const
 				NORM_BOF_FEATURE_TYPE == NormBofFeatureType::L2_NORM ? string("L2") :
 						NORM_BOF_FEATURE_TYPE == NormBofFeatureType::L1_NORM_SQUARE_ROOT ? string("L1") :
 								"UNKNOWN");
+	fs << "UseSpatialPyramid" << USE_SPATIAL_PYRAMID;
 	fs << "PyramidLevel" << PYRAMID_LEVEL;
 	fs << "Centers" << centers;
 }
@@ -77,6 +78,7 @@ void BoFSpatialPyramids::read(const cv::FileNode& node)
 					normBofFeatureTypeStr == "L1" ? NormBofFeatureType::L1_NORM_SQUARE_ROOT :
 							NormBofFeatureType::UNKNOWN;
 	CV_Assert(NORM_BOF_FEATURE_TYPE>=0);
+	node["UseSpatialPyramid"] >> USE_SPATIAL_PYRAMID;
 	node["PyramidLevel"] >> PYRAMID_LEVEL;
 	node["Centers"] >> centers;
 

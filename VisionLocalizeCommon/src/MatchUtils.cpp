@@ -287,9 +287,7 @@ void hulo::matchAKAZEToQuery(const SfM_Data &sfm_data,
 	cout << "Start putative matching" << endl;
 
 	// read query descriptor
-	string filename2 = stlplus::create_filespec(sQueryMatchesDir,
-			stlplus::basename_part(sfm_data.views.at(queryInd)->s_Img_path),
-			"desc");
+	string filename2 = stlplus::create_filespec(sQueryMatchesDir, sfm_data.views.at(queryInd)->s_Img_path, "desc");
 	cv::Mat desc2;
 	hulo::readAKAZEBin(filename2, desc2);
 
