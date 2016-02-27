@@ -1,0 +1,47 @@
+{
+  "maps": [
+  	{
+  		"name":"cmu-qolt",
+  		"sfm_data_dir":"/home/ishihara/test/CMU-video-data-undistort/NSH-4F-QOLT-merge/Output/SfM/reconstruction/global",
+  		"match_dir":"/home/ishihara/test/CMU-video-data-undistort/NSH-4F-QOLT-merge/Output/matches",
+  		"a_mat_file":"/home/ishihara/test/CMU-video-data-undistort/NSH-4F-QOLT-merge/Ref/Amat.yml",
+  		"structure_ply_file":"/home/ishihara/test/CMU-video-data-undistort/NSH-4F-QOLT-merge/Output/SfM/reconstruction/global/colorized_global_structure.ply",
+  		"camera_ply_file":"/home/ishihara/test/CMU-video-data-undistort/NSH-4F-QOLT-merge/Output/SfM/reconstruction/global/colorized_global_camera.ply"
+  	},
+  	{
+  		"name":"thinklab-hakozaki",
+  		"sfm_data_dir":"/home/ishihara/test/ThinkLabHakozaki-undistort/Output/final/Output/SfM/reconstruction/global",
+  		"match_dir":"/home/ishihara/test/ThinkLabHakozaki-undistort/Output/final/Output/matches",
+  		"a_mat_file":"/home/ishihara/test/ThinkLabHakozaki-undistort/Ref/Amat.yml",
+  		"structure_ply_file":"/home/ishihara/test/ThinkLabHakozaki-undistort/Output/final/Output/SfM/reconstruction/global/colorized_global_structure.ply",
+  		"camera_ply_file":"/home/ishihara/test/ThinkLabHakozaki-undistort/Output/final/Output/SfM/reconstruction/global/colorized_global_camera.ply"
+  	},
+  	{
+  		"name":"thinklab-hakozaki-shrink-0.75",
+  		"sfm_data_dir":"/home/ishihara/test/ThinkLabHakozaki-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global",
+  		"match_dir":"/home/ishihara/test/ThinkLabHakozaki-shrink-0.75-undistort/Output/final/Output/matches",
+  		"a_mat_file":"/home/ishihara/test/ThinkLabHakozaki-shrink-0.75-undistort/Ref/Amat.yml",
+  		"structure_ply_file":"/home/ishihara/test/ThinkLabHakozaki-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global/colorized_global_structure.ply",
+  		"camera_ply_file":"/home/ishihara/test/ThinkLabHakozaki-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global/colorized_global_camera.ply",
+  		"dense_ply_file":"/home/ishihara/test/ThinkLabHakozaki-shrink-0.75-undistort/MVE/surface-L2-clean-ascii-global.ply"
+  	},
+  	{
+  		"name":"thinklab-hakozaki-2-shrink-0.75",
+  		"sfm_data_dir":"/home/ishihara/test/ThinklabHakozaki2-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global",
+  		"match_dir":"/home/ishihara/test/ThinklabHakozaki2-shrink-0.75-undistort/Output/final/Output/matches",
+  		"a_mat_file":"/home/ishihara/test/ThinklabHakozaki2-shrink-0.75-undistort/Ref/Amat.yml",
+  		"structure_ply_file":"/home/ishihara/test/ThinklabHakozaki2-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global/colorized_global_structure.ply",
+  		"camera_ply_file":"/home/ishihara/test/ThinklabHakozaki2-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global/colorized_global_camera.ply",
+  		"dense_ply_file":"/home/ishihara/test/ThinklabHakozaki2-shrink-0.75-undistort/MVE/surface-L2-clean-ascii-global.ply"
+  	},  	
+  	{
+  		"name":"hakozaki-office-3-shrink-0.75",
+  		"sfm_data_dir":"/home/ishihara/test/HakozakiOffice3-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global",
+  		"match_dir":"/home/ishihara/test/HakozakiOffice3-shrink-0.75-undistort/Output/final/Output/matches",
+  		"a_mat_file":"/home/ishihara/test/HakozakiOffice3-shrink-0.75-undistort/Ref/Amat.yml",
+  		"structure_ply_file":"/home/ishihara/test/HakozakiOffice3-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global/colorized_global_structure.ply",
+  		"camera_ply_file":"/home/ishihara/test/HakozakiOffice3-shrink-0.75-undistort/Output/final/Output/SfM/reconstruction/global/colorized_global_camera.ply",
+  		"dense_ply_file":"/home/ishihara/test/HakozakiOffice3-shrink-0.75-undistort/MVE/surface-L2-clean-ascii-global.ply"
+  	}  	
+  ]
+}

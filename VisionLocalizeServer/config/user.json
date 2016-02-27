@@ -1,0 +1,15 @@
+{
+  "users": [
+  	{
+  		"name":"1",
+  		"k_mat_file":"/home/ishihara/VisionLoc/VisionLocalizeServer/config/camera/iphone6-1920x1080/K.yml",
+		"dist_mat_file":"/home/ishihara/VisionLoc/VisionLocalizeServer/config/camera/iphone6-1920x1080/dist.yml"
+  	},
+  	{
+  		"name":"1-shrink-0.75",
+  		"k_mat_file":"/home/ishihara/VisionLoc/VisionLocalizeServer/config/camera/iphone6-1920x1080-shrink-0.75/K.yml",
+		"dist_mat_file":"/home/ishihara/VisionLoc/VisionLocalizeServer/config/camera/iphone6-1920x1080-shrink-0.75/dist.yml",
+		"scale_image":"0.75"
+  	}
+  ]
+}
