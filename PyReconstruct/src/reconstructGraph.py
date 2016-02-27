@@ -38,6 +38,7 @@ import yajl as json
 import numpy as np
 import time
 import hulo_sfm.cleanSfM as cleanSfM
+import hulo_sfm.sfmMergeGraph as sfmMergeGraph
 import hulo_bow.sfmMergeGraphBOW as sfmMergeGraphBOW
 import hulo_file.FileUtils as FileUtils
 import hulo_file.SfmDataUtils as SfMDataUtils
