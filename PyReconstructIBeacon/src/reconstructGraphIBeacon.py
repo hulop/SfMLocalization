@@ -34,7 +34,7 @@
 import argparse
 import os
 import sys
-import yajl as json
+import json
 import numpy as np
 import time
 import hulo_sfm.cleanSfM as cleanSfM

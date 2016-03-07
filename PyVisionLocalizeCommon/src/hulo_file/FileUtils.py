@@ -23,7 +23,7 @@
 # -*- coding: utf-8 -*-
 import os
 import shutil
-import yajl as json
+import json
 import numpy as np
 import struct
 

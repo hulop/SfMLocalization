@@ -27,7 +27,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import os
-import yajl as json
+import json
 import scipy.spatial.distance
 
 # parse beacon setting file and extract information, which is
