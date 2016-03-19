@@ -19,6 +19,7 @@
 			}
 		</style>
 		<script type="text/javascript" src="./jquery/jquery.min.js"></script>
+		<script type="text/javascript" src="./three/js/libs/tween.min.js"></script>
 		<script type="text/javascript" src="./three/three.min.js"></script>
 		<script type="text/javascript" src="./three/js/loaders/PLYLoader.js"></script>
 		<script type="text/javascript" src="./three/js/Detector.js"></script>
@@ -41,15 +42,19 @@
 		var SFM_STRUCTURE_PLY_FILE;
 		var SFM_CAMERA_PLY_FILE;
 		var USER_HISTORY_JSON_FILE
-		var SERVER_URL = 'http://tishilinux.trl.ibm.com:3000';
+		var SERVER_URL = 'http://ar-t530.dhcp.trl.ibm.com:3000';
 		var LOCALIZE_API_URL = SERVER_URL + '/localize';
 		var MAP_API_URL = SERVER_URL + '/map';
 		var USER_API_URL = SERVER_URL + '/user';
 		var SHOW_GRID = true;
 		var SHOW_SFM_CAMERA = false;
 		var SHOW_DENSE_SCENE = false;
+		var DEMO_MODE = false;
 		
 		$(document).ready(function(){
+			var lookat = new THREE.Vector3(.5, 3.8, 1);
+			var upto = new THREE.Vector3(0,0,1);
+			var camposdef = new THREE.Vector3(.5, 0, 10);
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			
 			MAP_NAME = getUrlParameter('map');
@@ -62,6 +67,13 @@
 				document.write('Please specify user parameter');
 				return;
 			}
+			DEMO_MODE = getUrlParameter('demo');
+			if (DEMO_MODE) {
+				SHOW_GRID = true;
+				SHOW_SFM_CAMERA = false;
+				SHOW_DENSE_SCENE = true;
+			}
+			
 			SFM_STRUCTURE_PLY_FILE = MAP_API_URL + '/structure?name=' + MAP_NAME;
 			SFM_CAMERA_PLY_FILE = MAP_API_URL + '/camera?name=' + MAP_NAME;
 			DENSE_STRUCTURE_PLY_FILE = MAP_API_URL + '/dense?name=' + MAP_NAME;
@@ -125,6 +137,10 @@
 				.on("change",function(){
 					SHOW_DENSE_SCENE = $(this).is(":checked");
 				});
+				
+				if (DEMO_MODE) {
+					controlcontainer.hide();
+				}
 			}
 			
 			function init() {
@@ -138,7 +154,9 @@
 				
 				// camera
 				camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
-				camera.position.set( 10, 0, 0 );
+				camera.position.copy(camposdef);
+//				camera.up.copy(new THREE.Vector3(0,0,1));
+				camera.lookAt(lookat);
 				
 				camera2d = new THREE.OrthographicCamera(0, window.innerWidth, 0, window.innerHeight, 0.001, 10000);
 
@@ -164,6 +182,7 @@
 			    controls.noPan = false;
 			    controls.staticMoving = true;
 			    controls.dynamicDampingFactor = 0.3;
+			    controls.target.copy(lookat);
 
 				// draw grid plane
 				gridParent = new THREE.Object3D();
@@ -295,6 +314,7 @@
 				renderer.render( scene2d, camera2d );
 			    controls.handleResize();
 			    controls.update();
+			    TWEEN.update();
 			}
 			
         	function loadUserHistory(){
@@ -328,6 +348,16 @@
 					avatarmat:{color:color, opacity: .9, transparent:true},
 					camoffs: new THREE.Vector3(0,0,1.5)
 				});
+				var isnear = false;
+				function __set_animate_cam(pth, dur){
+					TWEEN.removeAll();
+					new TWEEN.Tween({val:0}).to({val:1}, dur)
+					.easing(TWEEN.Easing.Quadratic.InOut)
+					.onUpdate(function(){
+						camera.position.copy(pth.getPoint(this.val));
+						camera.up.copy(upto);
+					}).start();
+				}
    	        	timer = setInterval(function(){
    					$.ajax({
    				        type: "GET",
@@ -342,6 +372,20 @@
     			        			
    			        			var result = data[data.length-1]["estimate"];    								
    								drawShape(locCameraPointsParent, avatar.clone(), result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
+   								if (DEMO_MODE) {
+   									if(result["t"][1] > 2.1){
+   										isnear = true;
+   	   									var dest = new THREE.Vector3(result["t"][0] - lookat.x, result["t"][1] - lookat.y, result["t"][2] - lookat.z);
+   	   									dest.setLength(1.5);//
+   	   									dest.add(new THREE.Vector3(result["t"][0],result["t"][1],result["t"][2] + .5))
+   	   									__set_animate_cam(new THREE.LineCurve3(camera.position, dest), 400);
+   	   								}else{
+   	   									if(isnear){
+   	   										__set_animate_cam(new THREE.LineCurve3(camera.position, camposdef), 400);
+   	   									}
+   	   									isnear = false;
+   	   								}
+   								}
    			        		}
    			        	}
    			     	});

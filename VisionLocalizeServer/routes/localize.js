@@ -127,7 +127,7 @@ exports.estimateGet = function(req, res) {
         console.log('localization result : ' + result);
         var jsonObj;
         if (result && result.length>0) {
-        	jsonObj = {'estimate':{'t':result.slice(0,3), 'R':[result.slice(4,7),result.slice(7,9),result.slice(9,12)]}};
+        	jsonObj = {'estimate':{'t':result.slice(0,3), 'R':[result.slice(3,6),result.slice(6,9),result.slice(9,12)]}};
         	
             // update users' history
         	if (!share.userHistories[req.query.user]) {

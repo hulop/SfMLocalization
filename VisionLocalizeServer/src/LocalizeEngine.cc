@@ -513,7 +513,7 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 
 	cv::Mat cvR_;
 	cv::eigen2cv(R_, cvR_);
-	cv::Mat global_R = mA(cv::Rect(0,0,3,3)) * cvR_;
+	cv::Mat global_R = mA(cv::Rect(0,0,3,3)) * cvR_.t();
 	cout << "global R = " << endl << global_R << endl;
 	for (int i=0; i<3; i++) {
 		for (int j=0; j<3; j++) {
