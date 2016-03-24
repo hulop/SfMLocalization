@@ -506,7 +506,7 @@ int main(int argc, char **argv) {
 		cout << "#inliers = " << resection_data.vec_inliers.size() << endl;
 		cout << "P = " << endl << resection_data.projection_matrix << endl;
 		cout << "K = " << endl << K_ << endl;
-		cout << "R = " << endl << R_ << endl;
+		cout << "R = " << endl << R_.transpose() << endl;
 		cout << "t = " << endl << t_ << endl;
 		cout << "-R't = " << endl << -R_.transpose() * t_ << endl;
 
@@ -544,7 +544,7 @@ int main(int argc, char **argv) {
 				os << "\t\"sfm_data\": \"" << sSfM_data << "\"," << endl;
 				os << "\t\"matches_dir\": \"" << sMatchesDir << "\"," << endl;
 				os << "\t\"K\": " << K_.format(matFormat) << "," << endl;
-				os << "\t\"R\": " << R_.format(matFormat) << "," << endl;
+				os << "\t\"R\": " << R_.transpose().format(matFormat) << "," << endl;
 				os << "\t\"t\": " << t_out.format(vecFormat) << "," << endl;
 				os << "\t\"pair\": [";
 				for (vector<size_t>::const_iterator iterW = resection_data.vec_inliers.begin();
