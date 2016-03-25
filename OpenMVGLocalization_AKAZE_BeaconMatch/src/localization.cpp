@@ -463,7 +463,6 @@ int main(int argc, char **argv) {
 		cout << "cpt = " << cpt << endl;
 
 		// perform resection
-		double errorMax = numeric_limits<double>::max();
 		bool bResection = false;
 		if (cpt > MINUM_NUMBER_OF_POINT_RESECTION) {
 			geometry::Pose3 pose;

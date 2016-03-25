@@ -163,7 +163,12 @@ int main(int argc, char **argv) {
 
 	if (commandBD.size() > 0) {
 		// 2. perform bundle adjustment
-		Bundle_Adjustment_Ceres bundle_adjustment_obj;
+		// Set bundle adjustment option, this option assumes you do not enable sparse matrix solver
+		// http://ceres-solver.org/faqs.html#solving
+		Bundle_Adjustment_Ceres::BA_options options(true, true);
+		options._linear_solver_type = ceres::ITERATIVE_SCHUR;
+		options._preconditioner_type = ceres::SCHUR_JACOBI;
+		Bundle_Adjustment_Ceres bundle_adjustment_obj(options);
 
 		// 2.1. solve for selected parameters (rotation, translation, intrinsic, structure)
 		for (vector<string>::const_iterator iterCommand = commandBD.begin();

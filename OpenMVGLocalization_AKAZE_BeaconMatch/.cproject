@@ -65,6 +65,9 @@
 								<option id="gnu.cpp.compiler.option.other.other.131074810" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11 -fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.614688987" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.other.pic.443136589" name="Position Independent Code (-fPIC)" superClass="gnu.cpp.compiler.option.other.pic" useByScannerDiscovery="false" value="false" valueType="boolean"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.207146253" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="EIGEN_MPL2_ONLY"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.615726141" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1689907199" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -93,9 +96,6 @@
 									<listOptionValue builtIn="false" value="openMVG_kvld"/>
 									<listOptionValue builtIn="false" value="stlplus"/>
 									<listOptionValue builtIn="false" value="ceres"/>
-									<listOptionValue builtIn="false" value="cxsparse"/>
-									<listOptionValue builtIn="false" value="cholmod"/>
-									<listOptionValue builtIn="false" value="glog"/>
 									<listOptionValue builtIn="false" value="lapack"/>
 									<listOptionValue builtIn="false" value="blas"/>
 									<listOptionValue builtIn="false" value="gomp"/>
@@ -190,6 +190,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BoWCommon/src}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/VisionLocalizeBeaconCommon/src}&quot;"/>
 								</option>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.447007375" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="EIGEN_MPL2_ONLY"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.554384930" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.769640058" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -219,9 +222,6 @@
 									<listOptionValue builtIn="false" value="openMVG_kvld"/>
 									<listOptionValue builtIn="false" value="stlplus"/>
 									<listOptionValue builtIn="false" value="ceres"/>
-									<listOptionValue builtIn="false" value="cxsparse"/>
-									<listOptionValue builtIn="false" value="cholmod"/>
-									<listOptionValue builtIn="false" value="glog"/>
 									<listOptionValue builtIn="false" value="lapack"/>
 									<listOptionValue builtIn="false" value="blas"/>
 									<listOptionValue builtIn="false" value="gomp"/>

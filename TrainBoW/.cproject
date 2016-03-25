@@ -70,6 +70,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BoWCommon/src}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.1629747763" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11 -fopenmp" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.2102682570" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="EIGEN_MPL2_ONLY"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.818901457" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1409570731" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -97,9 +100,6 @@
 									<listOptionValue builtIn="false" value="openMVG_kvld"/>
 									<listOptionValue builtIn="false" value="stlplus"/>
 									<listOptionValue builtIn="false" value="ceres"/>
-									<listOptionValue builtIn="false" value="cxsparse"/>
-									<listOptionValue builtIn="false" value="cholmod"/>
-									<listOptionValue builtIn="false" value="glog"/>
 									<listOptionValue builtIn="false" value="lapack"/>
 									<listOptionValue builtIn="false" value="blas"/>
 									<listOptionValue builtIn="false" value="gomp"/>
@@ -202,6 +202,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/BoWCommon/src}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.775630327" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11 -fopenmp" valueType="string"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.981416292" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="EIGEN_MPL2_ONLY"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1635297050" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.707353744" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
@@ -229,9 +232,6 @@
 									<listOptionValue builtIn="false" value="openMVG_kvld"/>
 									<listOptionValue builtIn="false" value="stlplus"/>
 									<listOptionValue builtIn="false" value="ceres"/>
-									<listOptionValue builtIn="false" value="cxsparse"/>
-									<listOptionValue builtIn="false" value="cholmod"/>
-									<listOptionValue builtIn="false" value="glog"/>
 									<listOptionValue builtIn="false" value="lapack"/>
 									<listOptionValue builtIn="false" value="blas"/>
 									<listOptionValue builtIn="false" value="gomp"/>

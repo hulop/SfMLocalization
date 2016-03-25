@@ -19,7 +19,7 @@
       				"../VisionLocalizeCommon/src/PcaWrapper.cpp",
       				"../VisionLocalizeBeaconCommon/src/BeaconUtils.cpp"
       			],
-	  "cflags_cc" : [ "-O0 -g3 -Wall -c -fmessage-length=0 -std=c++11 -fopenmp -fexceptions" ],
+	  "cflags_cc" : [ "-O0 -g3 -Wall -c -fmessage-length=0 -std=c++11 -fopenmp -fexceptions -DEIGEN_MPL2_ONLY" ],
 	  "cflags_cc!" : [ "-fno-rtti" ],
       "include_dirs": [
       					"/usr/local/include/openMVG_dependencies/cereal/include",
@@ -60,9 +60,6 @@
 						"-lopenMVG_kvld",
 						"-lstlplus",
 						"-lceres",
-						"-lcxsparse",
-						"-lcholmod",
-						"-lglog",
 						"-llapack",
 						"-lblas",
 						"-lgomp",
