@@ -75,5 +75,6 @@ public:
 			int beaconKnnNum=0, int bowKnnNum=0);
 
 	std::vector<double> localize(const cv::Mat& image, const std::string workingDir, const std::string& beaconStr,
+			const bool bReturnKeypoints, cv::Mat& points2D, cv::Mat& points3D, std::vector<int>& pointsInlier,
 			const std::vector<double>& center=std::vector<double>(), double radius=-1.0);
 };

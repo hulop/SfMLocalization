@@ -25,11 +25,6 @@
 		<script type="text/javascript" src="./three/js/controls/TrackballControls.js"></script>
 		<script>
 		/*
-		var DATASET_NAME = 'thinklab-hakozaki';
-		var USER_NAME = '1';
-		var MAP_NAME = 'thinklab-hakozaki';
-		*/
-		/*
 		var DATASET_NAME = 'thinklab-hakozaki-shrink-0.75';
 		var USER_NAME = '1-shrink-0.75';
 		var MAP_NAME = 'thinklab-hakozaki-shrink-0.75';
@@ -50,11 +45,14 @@
 		
 		var SFM_STRUCTURE_PLY_FILE = './data/online/' + DATASET_NAME + '/colorized_global_structure.ply';
 		var SFM_CAMERA_PLY_FILE = './data/online/' + DATASET_NAME + '/colorized_global_camera.ply';
+		var DENSE_STRUCTURE_PLY_FILE = './data/online/'+ DATASET_NAME + '/surface-L2-clean-ascii-global.ply';		
 		var LOCALIZE_JSON_FILE = './data/online/' + DATASET_NAME + '/loc_global.json';
 		var LOCALIZE_API_URL = 'http://tishilinux.trl.ibm.com:3000/localize';
 		var SHOW_GRID = true;
 		var SHOW_SFM_CAMERA = false;
+		var SHOW_DENSE_SCENE = false;		
 		var SHOW_OFFLINE_ESTIMATE_CAMERA = true;
+		var SHOW_KEYPOINTS = true;
 		
 		var USE_RADIUS_RISTRICT = false;
 		var RUNNING_LOCALIZE = false;
@@ -66,14 +64,14 @@
 			
 			// objects for drawing
 			var container;
-			var renderer, controls, scene, camera, scene2d, camera2d;
+			var renderer, controls, scene, camera, sparseScene, denseScene, scene2d, camera2d;
 			var gridParent;
 			var sfmCameraParent;
+			var sparseSceneParent;			
+			var denseSceneParent;			
 			var locCameraPointsParent;
 			var offlineEstimateCameraParent;
-			
-			// view for query image
-			var queryImageView = null;
+			var keypoints3dParent;
 			
 			// exec localize timer
 			var timer = null;
@@ -114,6 +112,20 @@
 				
 				$("<span/>",{
 					"class":"checkbox_label"
+				}).html("Show Dense Structure")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:SHOW_DENSE_SCENE,
+					name:"showDenseScene",
+					value:"showDenseScene"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					SHOW_DENSE_SCENE = $(this).is(":checked");
+				});
+				
+				$("<span/>",{
+					"class":"checkbox_label"
 				}).html("Show Camera Estimated by Offline")
 				.appendTo(controlcontainer);
 				$("<input/>",{
@@ -124,6 +136,20 @@
 				}).appendTo(controlcontainer)
 				.on("change",function(){
 					SHOW_OFFLINE_ESTIMATE_CAMERA = $(this).is(":checked");
+				});
+				
+				$("<span/>",{
+					"class":"checkbox_label"
+				}).html("Show Keypoints")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:SHOW_KEYPOINTS,
+					name:"showKeypoints",
+					value:"showKeypoints"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					SHOW_KEYPOINTS = $(this).is(":checked");
 				});
 				
 				$("<span/>",{
@@ -175,6 +201,11 @@
 				
 				scene2d = new THREE.Scene();
 				
+				// light 
+				var light = new THREE.DirectionalLight(0xffffff);
+				light.position.set(0, 0, 100).normalize();
+				scene.add(light);
+				
 				// controls
 			    controls = new THREE.TrackballControls(camera);
 			    controls.rotateSpeed = 5;
@@ -208,16 +239,18 @@
 				scene.add(gridParent);
 				
 				// draw structure PLY file
+				sparseSceneParent = new THREE.Object3D();				
 				var loader = new THREE.PLYLoader();
 				loader.addEventListener( 'load', function ( event ) {					
 					var geometry = event.content;
 					var materials = new THREE.PointCloudMaterial( { size: 0.05, vertexColors: THREE.VertexColors, transparent: true } );
 					var particles = new THREE.PointCloud(geometry, materials);
 					particles.colors = event.content.colors;
-					scene.add( particles );
+					sparseSceneParent.add( particles );
 				} );
 				loader.load( SFM_STRUCTURE_PLY_FILE );
-				
+				scene.add(sparseSceneParent);
+
 				// draw camera PLY file
 				sfmCameraParent = new THREE.Object3D();
 				var loader = new THREE.PLYLoader();
@@ -231,12 +264,29 @@
 				loader.load( SFM_CAMERA_PLY_FILE );
 				scene.add(sfmCameraParent);
 				
+				// dense PLY file
+				denseSceneParent = new THREE.Object3D();
+				var loader = new THREE.PLYLoader();
+				loader.addEventListener( 'load', function ( event ) {
+					var geometry = event.content;
+					var materials = new THREE.PointCloudMaterial( { size: 0.05, vertexColors: THREE.VertexColors, transparent: true } );
+					var particles = new THREE.PointCloud(geometry, materials);
+					particles.colors = event.content.colors;
+					denseSceneParent.add( particles );
+				} );
+				loader.load( DENSE_STRUCTURE_PLY_FILE );
+				scene.add(denseSceneParent);
+				
 				// prepare camera points parent
 				locCameraPointsParent = new THREE.Object3D();
 				scene.add(locCameraPointsParent);
 
 				offlineEstimateCameraParent = new THREE.Object3D();
 				scene.add(offlineEstimateCameraParent);
+				
+				// prepare keypoints parent
+				keypoints3dParent = new THREE.Object3D();
+				scene.add(keypoints3dParent); 
 				
 				// renderer
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
@@ -293,7 +343,10 @@
 				
 				gridParent.visible = SHOW_GRID ? true : false;
 				sfmCameraParent.visible = SHOW_SFM_CAMERA ? true : false;
+				sparseSceneParent.visible = SHOW_DENSE_SCENE ? false : true;
+				denseSceneParent.visible = SHOW_DENSE_SCENE ? true : false;				
 				offlineEstimateCameraParent.visible = SHOW_OFFLINE_ESTIMATE_CAMERA ? true : false;
+				keypoints3dParent.visible = SHOW_KEYPOINTS ? true : false;
 				
 				renderer.clear();
 			    renderer.render( scene, camera );
@@ -323,17 +376,14 @@
 			        		if (i<data.length) {
 			        			if (!RUNNING_LOCALIZE) {
 					            	var queryImage = data[i]["filename"];
-					            	
-				        			// draw query image
 				        			var queryImageName = new String(queryImage).substring(queryImage.lastIndexOf('/') + 1);
-				        			createViewImage('data/online/' + DATASET_NAME + '/image/' + queryImageName, 0.2);
 				        			
 				        			// localize image and draw result
 				        			localizeImage('data/online/' + DATASET_NAME + '/image/' + queryImageName);
 				        			
 					        		// draw offline estimated camera point
 									drawPoint(offlineEstimateCameraParent, data[i]["t"][0], data[i]["t"][1], data[i]["t"][2], 0x0000FF);
-				        			
+									
 									i++;
 			        			} else {
 			        				console.log("sleep localize...");
@@ -358,34 +408,61 @@
         		return ret;
         	}
         	
-        	function createViewImage(imageUrl, scale){
-        		var image = new Image();
-        		image.onload = function(e) {
-	        		if (queryImageView!=null) {
-	        			scene2d.remove(queryImageView);
-	        		}
-        			
-        			var width = e.target.width * scale;
-        			var height = e.target.height * scale;
-        			
-	        	    var mapCanvas = document.createElement( 'canvas' );
-	        	    var ctx = mapCanvas.getContext( '2d' );
-	        	    ctx.translate(0, height);
-	        	    ctx.scale(1, -1);
-	        	    ctx.drawImage( image, 0, 0, e.target.width, e.target.height, 0, 0, width, height );
-	
-	        	    var texture = new THREE.Texture( mapCanvas );
-	        	    texture.needsUpdate = true;
-	        	    
-	                var material = new THREE.SpriteMaterial({map: texture, color: 0xFFFFFF});
-	                queryImageView = new THREE.Sprite(material);
-	                queryImageView.scale.set(width, height, 1);
-	                queryImageView.position.set(window.innerWidth-width*0.6, window.innerHeight-height*0.6, -9999);
-	                scene2d.add(queryImageView);
-	        	};
-	        	image.src = imageUrl;
-        	}
+        	function createViewImage(imageBlob, scale, keypoints2D, inlierKeypoints){
+				var reader = new window.FileReader();
+				reader.onloadend = function(event){
+	        		var image = new Image();
+	        		image.onload = function(e) {
+	            	    for(var i=scene2d.children.length-1; i>=0; i--){
+	            	    	scene2d.remove(scene2d.children[i]);
+	            	    };
+	        			
+	        			var width = e.target.width * scale;
+	        			var height = e.target.height * scale;
+	        			
+		        	    var mapCanvas = document.createElement( 'canvas' );
+		        	    mapCanvas.width = width;
+		        	    mapCanvas.height = height;
+		        	    var ctx = mapCanvas.getContext( '2d' );
+		        	    ctx.translate(0, height);
+		        	    ctx.scale(1, -1);
+		        	    ctx.drawImage( image, 0, 0, e.target.width, e.target.height, 0, 0, width, height );
+		        	    
+		        	    if (keypoints2D && inlierKeypoints) {
+			        	    var inliers = [];
+			        	    var outliers = [];
+			        	    for (var i=0; i<keypoints2D.length; i++) {
+			        	    	if ($.inArray(i, inlierKeypoints)) {
+			        	    		inliers.push(i);
+			        	    	} else {
+			        	    		outliers.push(i);
+			        	    	}
+			        	    }
+			        	    ctx.fillStyle = "rgb(0, 255, 0)";
+			        	    for (var i=0; i<inliers.length; i++) {
+			        	    	ctx.fillRect(keypoints2D[inliers[i]][0]*scale, keypoints2D[inliers[i]][1]*scale, 3, 3);
+			        	    }
+			        	    ctx.fillStyle = "rgb(255, 0, 0)";
+			        	    for (var i=0; i<outliers.length; i++) {
+			        	    	ctx.fillRect(keypoints2D[outliers[i]][0]*scale, keypoints2D[outliers[i]][1]*scale, 3, 3);
+			        	    }
+		        	    }
+		        	    
+		        	    var texture = new THREE.Texture( mapCanvas );
+		        	    texture.needsUpdate = true;
+		        	    
+		                var material = new THREE.SpriteMaterial({map: texture, color: 0xFFFFFF});
+		                var queryImageView = new THREE.Sprite(material);
+		                queryImageView.scale.set(width, height, 1);
+		                queryImageView.position.set(window.innerWidth-width*0.6, window.innerHeight-height*0.6, -1);
+		                scene2d.add(queryImageView);
+		        	};
+		        	image.src = event.target.result;
+				};
+				reader.readAsDataURL(imageBlob);
+			}
         	
+			var avatar;			
         	function localizeImage(imageUrl){
         		RUNNING_LOCALIZE = true;
         		
@@ -393,10 +470,13 @@
 				xhr.open('GET', imageUrl);
 				xhr.responseType = 'blob';
 				xhr.onload = function(e) {
+					var imageData = this.response;
+					
 					var formData = new FormData();
+					formData.append('returnKeypoint', 'true');
 					formData.append('user', USER_NAME);
 					formData.append('map', MAP_NAME);
-					formData.append('image', this.response);
+					formData.append('image', imageData);
 					
 					// restrict search area
 					if (USE_RADIUS_RISTRICT && PREVIOUS_ESTIMATE) {
@@ -415,17 +495,39 @@
 						cache: false,
 						timeout: 100000,
 						success: function(data) {
+							createViewImage(imageData, 0.4, data["keypoints2D"], data["inlierKeypoints"]);
+							
 							var result = data["estimate"];
-			        		// draw localized point by query image							
-							//drawPoint(locCameraPointsParent, result["t"][0], result["t"][1], result["t"][2], 0xFF0000);
-							drawPyramid(locCameraPointsParent, result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
+							
+							// draw localized position
+			        	    for(var i=locCameraPointsParent.children.length-1; i>=0; i--){
+			        	    	locCameraPointsParent.remove(locCameraPointsParent.children[i]);
+			        	    }
+			        	    
+							//drawPyramid(locCameraPointsParent, result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
+							if (!avatar) {
+					        	var color = 0xffff00; 
+								avatar = __create_avatar({
+									l_intensity:1,
+									basemat:{color:color},
+									avatarmat:{color:color, opacity: .9, transparent:true},
+									camoffs: new THREE.Vector3(0,0,1.5)
+								});
+							}
+   							drawShape(locCameraPointsParent, avatar.clone(), result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
+							
+							
+			        		// draw keypoints
+			        		drawKeyPoints3D(keypoints3dParent, data["keypoints3D"], data["inlierKeypoints"]);
 							
 							PREVIOUS_ESTIMATE = result["t"];
-							
+														
 							RUNNING_LOCALIZE = false;
 						},
 						error: function(data) {
-							RUNNING_LOCALIZE = false;							
+							createViewImage(imageData, 0.4);
+							
+							RUNNING_LOCALIZE = false;
 		                }
 					});
 				};
@@ -506,6 +608,101 @@
         					0, 0, 0, 1));
         		}
         		parent.add(pyramid);
+        	}
+        	
+        	function __create_avatar(option){
+        		var opt = option || {};
+        		var bheight = opt.camoffs.length();
+        		var pmat = new THREE.MeshPhongMaterial(opt.avatarmat || {color:0xf2f2b0, opacity: .7, transparent:true});
+        		var blackpmat = new THREE.MeshPhongMaterial({color:0x000000, opacity: .7, transparent:true});
+        		var basepos = new THREE.Mesh(new THREE.SphereGeometry(bheight * .5, 16, 16), new THREE.MeshPhongMaterial(opt.basemat || {color:0x640125}));
+        		var campoint1 = new THREE.Mesh(new THREE.SphereGeometry(bheight * .16, 16, 16), blackpmat);
+        		var campoint2 = new THREE.Mesh(new THREE.SphereGeometry(bheight * .16, 16, 16), blackpmat);
+        		var person = new THREE.Mesh(
+        			     new THREE.CylinderGeometry(bheight * .30, 0, bheight * 0.8,16),                         
+        			     pmat
+        			     );
+        		person.rotation.x =  Math.PI;
+        		var pos = new THREE.Vector3(0,0,0);
+        		var campos1 = new THREE.Vector3(bheight * 0.2,bheight * 0.3,bheight * 0.2);
+        		var campos2 = new THREE.Vector3(-bheight * 0.2,bheight * 0.3,bheight * 0.2);
+        		var poffs = new THREE.Vector3(0,bheight * 0.5,0);
+        		basepos.position.copy(pos);
+        		campoint1.position.copy(campos1);
+        		campoint2.position.copy(campos2);
+        		person.position.copy(pos).add(poffs);
+        		var ret = new THREE.Object3D();
+        		ret.add(basepos);
+        		ret.add(campoint1);
+        		ret.add(campoint2);
+        		ret.add(person);
+        		ret.rotation.x =  Math.PI/2;
+        		var avatar = new THREE.Object3D();
+        		avatar.add(ret);
+        		return avatar;
+        	}
+        	
+        	function drawShape(parent, shape, x, y, z, rotMat, color) {
+        		var FLIP_Z_ROTATE = true;
+        		var size = 0.3;
+        		
+        		if (FLIP_Z_ROTATE) {
+	        		shape.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], -rotMat[0][1], -rotMat[0][2], x,
+            				-rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
+	            			-rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
+            				0, 0, 0, 1));
+        		} else {
+	        		shape.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[0][1], rotMat[0][2], x, 
+	        				rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
+	        				rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
+        					0, 0, 0, 1));
+        		}
+        		shape.scale.x = size;
+        		shape.scale.y = size;
+        		shape.scale.z = size;
+        		parent.add(shape);
+        	}
+        	
+        	function drawKeyPoints3D(parent, keypoints3D, inlierKeypoints) {
+        	    for(var i=parent.children.length-1; i>=0; i--){
+        	    	parent.remove(parent.children[i]);
+        	    }
+        		        	    
+        	    var inliers = [];
+        	    var outliers = [];
+        	    for (var i=0; i<keypoints3D.length; i++) {
+        	    	if ($.inArray(i, inlierKeypoints)) {
+        	    		inliers.push(i);
+        	    	} else {
+        	    		outliers.push(i);
+        	    	}
+        	    }
+        	    
+				var inlierPointCloudMaterial = new THREE.PointCloudMaterial({
+      				color: 0x00FF00,
+      				size: 0.1,
+      				transparent: true
+    			});
+				var inlierParticles = new THREE.Geometry();
+				for (var i=0; i<inliers.length; i++) {
+					particle = new THREE.Vector3(keypoints3D[inliers[i]][0], keypoints3D[inliers[i]][1], keypoints3D[inliers[i]][2]);					
+					inlierParticles.vertices.push(particle);
+				}
+	        	var inlierPointCloud = new THREE.PointCloud(inlierParticles, inlierPointCloudMaterial);
+	        	parent.add( inlierPointCloud );
+
+				var outlierPointCloudMaterial = new THREE.PointCloudMaterial({
+      				color: 0xFF0000,
+      				size: 0.1,
+      				transparent: true
+    			});
+				var outlierParticles = new THREE.Geometry();
+				for (var i=0; i<outliers.length; i++) {
+					particle = new THREE.Vector3(keypoints3D[outliers[i]][0], keypoints3D[outliers[i]][1], keypoints3D[outliers[i]][2]);					
+					outlierParticles.vertices.push(particle);
+				}
+	        	var outlierPointCloud = new THREE.PointCloud(outlierParticles, outlierPointCloudMaterial);
+	        	parent.add( outlierPointCloud );
         	}
 		});
 		</script>

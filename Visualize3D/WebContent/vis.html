@@ -42,7 +42,7 @@
 		var SFM_STRUCTURE_PLY_FILE;
 		var SFM_CAMERA_PLY_FILE;
 		var USER_HISTORY_JSON_FILE
-		var SERVER_URL = 'http://ar-t530.dhcp.trl.ibm.com:3000';
+		var SERVER_URL = 'http://tishilinux.trl.ibm.com:3000';
 		var LOCALIZE_API_URL = SERVER_URL + '/localize';
 		var MAP_API_URL = SERVER_URL + '/map';
 		var USER_API_URL = SERVER_URL + '/user';
@@ -368,7 +368,7 @@
    			        		if (data.length>0) {
    				        	    for(var i=locCameraPointsParent.children.length-1; i>=0; i--){
    				        	    	locCameraPointsParent.remove(locCameraPointsParent.children[i]);
-   				        	    };
+   				        	    }
     			        			
    			        			var result = data[data.length-1]["estimate"];    								
    								drawShape(locCameraPointsParent, avatar.clone(), result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);

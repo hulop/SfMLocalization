@@ -238,8 +238,9 @@ void LocalizeEngine::getLocalViews(openMVG::sfm::SfM_Data &sfm_data, const cv::M
 	}
 }
 
-std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::string workingDir,
-		const std::string& beaconStr, const std::vector<double>& center, double radius)
+std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::string workingDir, const std::string& beaconStr,
+		bool bReturnKeypoints, cv::Mat& points2D, cv::Mat& points3D, std::vector<int>& pointsInlier,
+		const std::vector<double>& center, double radius)
 {
 	vector<double> result;
 	double startQuery = (double) getTickCount();
@@ -467,6 +468,26 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 	}
 	double endResection = (double) getTickCount();
 
+	if (bReturnKeypoints) {
+		// collect keypoints in 2D
+		cv::eigen2cv(resection_data.pt2D, points2D);
+		points2D = points2D.t();
+
+		// collect keypoints in 3D
+		cv::Mat locPoints3D;
+		cv::eigen2cv(resection_data.pt3D, locPoints3D);
+		CV_Assert(locPoints3D.rows==3);
+
+		cv::Mat locPoints3Dh = cv::Mat::ones(4, locPoints3D.cols, CV_64F);
+		locPoints3D.copyTo(locPoints3Dh(cv::Rect(0,0,locPoints3D.cols,3)));
+
+		cv::Mat globalPoints3D = mA * locPoints3Dh;
+		points3D = globalPoints3D(cv::Rect(0,0,globalPoints3D.cols,3)).clone().t();
+
+		// collect inlier keypoints
+		copy(resection_data.vec_inliers.begin(), resection_data.vec_inliers.end(), back_inserter(pointsInlier));
+	}
+
 	if (!bResection || resection_data.vec_inliers.size() <= MINUM_NUMBER_OF_INLIER_RESECTION) {
 		cout << "Fail to estimate camera matrix" << endl;
 
@@ -513,7 +534,7 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 
 	cv::Mat cvR_;
 	cv::eigen2cv(R_, cvR_);
-	cv::Mat global_R = mA(cv::Rect(0,0,3,3)) * cvR_.t();
+	cv::Mat global_R = mA(cv::Rect(0,0,3,3)) * cvR_;
 	cout << "global R = " << endl << global_R << endl;
 	for (int i=0; i<3; i++) {
 		for (int j=0; j<3; j++) {

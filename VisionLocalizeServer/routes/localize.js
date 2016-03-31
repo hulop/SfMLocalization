@@ -87,7 +87,13 @@ exports.estimateGet = function(req, res) {
 	var sfmDataDir = share.mapNameMap[req.query.map]['sfm_data_dir'];
 	var matchDir = share.mapNameMap[req.query.map]['match_dir'];
 	var aMatFile = share.mapNameMap[req.query.map]['a_mat_file'];
-	    
+	
+	// check return keypoint parameter
+	var returnKeypoint = false;
+    if (req.query.returnKeypoint) {
+    	returnKeypoint = (req.query.returnKeypoint == 'true');
+    }
+    
     async.waterfall([ function(callback) {
         var requestSettings = {
             method : 'GET',
@@ -107,27 +113,39 @@ exports.estimateGet = function(req, res) {
         if (req.query.beacon) {
 	        if (req.query.cx && req.query.cy && req.query.cz && req.query.radius) {
 	        	result = localizeImage.localizeImageBufferBeacon(req.query.user, kMatFile, distMatFile, scaleImage,
-	        			req.query.map, sfmDataDir, matchDir, aMatFile, image, req.query.beacon,
+	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, image, req.query.beacon,
 	        			[req.query.cx, req.query.cy, req.query.cz], req.query.radius);
 	        } else {
 	        	result = localizeImage.localizeImageBufferBeacon(req.query.user, kMatFile, distMatFile, scaleImage,
-	        			req.query.map, sfmDataDir, matchDir, aMatFile, image, req.query.beacon);
+	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, image, req.query.beacon);
 	        }
         } else {
 	        if (req.query.cx && req.query.cy && req.query.cz && req.query.radius) {
 	        	result = localizeImage.localizeImageBuffer(req.query.user, kMatFile, distMatFile, scaleImage,
-	        			req.query.map, sfmDataDir, matchDir, aMatFile, image, 
+	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, image, 
 	        			[req.query.cx, req.query.cy, req.query.cz], req.query.radius);
 	        } else {
 	        	result = localizeImage.localizeImageBuffer(req.query.user, kMatFile, distMatFile, scaleImage,
-	        			req.query.map, sfmDataDir, matchDir, aMatFile, image);
+	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, image);
 	        }
         }
         
-        console.log('localization result : ' + result);
         var jsonObj;
-        if (result && result.length>0) {
-        	jsonObj = {'estimate':{'t':result.slice(0,3), 'R':[result.slice(3,6),result.slice(6,9),result.slice(9,12)]}};
+        if (result && result.length==4) {
+        	console.log('localization successed.');
+        	
+        	console.log('estimate : ' + result[0]);
+        	jsonObj = {'estimate':{'t':result[0].slice(0,3), 'R':[result[0].slice(3,6),result[0].slice(6,9),result[0].slice(9,12)]}};
+        	
+        	if (returnKeypoint) {
+            	console.log('keypoints 2D : ' + result[1]);
+            	console.log('keypoints 3D : ' + result[2]);
+            	console.log('inlier keypoints : ' + result[3]);
+        		
+        		jsonObj['keypoints2D'] = result[1];
+        		jsonObj['keypoints3D'] = result[2];
+        		jsonObj['inlierKeypoints'] = result[3];
+        	}
         	
             // update users' history
         	if (!share.userHistories[req.query.user]) {
@@ -135,6 +153,8 @@ exports.estimateGet = function(req, res) {
         	}
         	share.userHistories[req.body.user].push(jsonObj);
         } else {
+        	console.log('localization failed.');
+        	
             jsonObj = {'estimate':{'t':[], 'R':[]}};
         }
        	// Send back the result as a JSON                    
@@ -201,6 +221,12 @@ exports.estimatePost = function(req, res) {
 	var aMatFile = share.mapNameMap[req.body.map]['a_mat_file'];
     var scaleImage = share.userNameMap[req.body.user]['scale_image'];
     
+	// check return keypoint parameter
+	var returnKeypoint = false;
+    if (req.body.returnKeypoint) {
+    	returnKeypoint = (req.body.returnKeypoint == 'true');
+    }
+    
     async.waterfall([ function(callback) {
         fs.readFile(req.files.image.path, function (err, data) {
             var imageName = req.files.image.name;
@@ -213,27 +239,38 @@ exports.estimatePost = function(req, res) {
                 if (req.body.beacon) {
                     if (req.body.cx && req.body.cy && req.body.cz && req.body.radius) {
                         result = localizeImage.localizeImageBufferBeacon(req.body.user, kMatFile, distMatFile, scaleImage,
-                        		req.body.map, sfmDataDir, matchDir, aMatFile, 
+                        		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint,
                         		data, req.body.beacon, [req.body.cx, req.body.cy, req.body.cz], req.body.radius);
                     } else {
                         result = localizeImage.localizeImageBufferBeacon(req.body.user, kMatFile, distMatFile, scaleImage,
-                        		req.body.map, sfmDataDir, matchDir, aMatFile, data, req.body.beacon);
+                        		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, data, req.body.beacon);
                     }
                 } else {
 	                if (req.body.cx && req.body.cy && req.body.cz && req.body.radius) {
 	                    result = localizeImage.localizeImageBuffer(req.body.user, kMatFile, distMatFile, scaleImage,
-	                    		req.body.map, sfmDataDir, matchDir, aMatFile, 
+	                    		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint,
 	                    		data, [req.body.cx, req.body.cy, req.body.cz], req.body.radius);
 	                } else {
 	                    result = localizeImage.localizeImageBuffer(req.body.user, kMatFile, distMatFile, scaleImage,
-	                    		req.body.map, sfmDataDir, matchDir, aMatFile, data);
+	                    		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, data);
 	                }
                 }
-                
-                console.log('localization result : ' + result);
+                                
                 var jsonObj;
-                if (result && result.length>0) {
-                	jsonObj = {'estimate':{'t':result.slice(0,3), 'R':[result.slice(3,6),result.slice(6,9),result.slice(9,12)]}};
+                if (result && result.length==4) {
+                	console.log('localization successed.');
+                	
+                	console.log('estimate : ' + result[0]);
+                	jsonObj = {'estimate':{'t':result[0].slice(0,3), 'R':[result[0].slice(3,6),result[0].slice(6,9),result[0].slice(9,12)]}};
+                	
+                	if (returnKeypoint) {
+                    	console.log('keypoints 2D : ' + result[1]);
+                    	console.log('keypoints 3D : ' + result[2]);
+                    	console.log('inlier keypoints : ' + result[3]);
+                		jsonObj['keypoints2D'] = result[1];
+                		jsonObj['keypoints3D'] = result[2];
+                		jsonObj['inlierKeypoints'] = result[3];
+                	}
                 	
                     // update users' history
                 	if (!share.userHistories[req.body.user]) {
@@ -244,6 +281,8 @@ exports.estimatePost = function(req, res) {
                 	}
                 	share.userHistories[req.body.user].push(jsonObj);
                 } else {
+                	console.log('localization failed.');
+                	
                     jsonObj = {'estimate':{'t':[], 'R':[]}};
                 }
                	// Send back the result as a JSON                    

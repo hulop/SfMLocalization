@@ -234,9 +234,9 @@
 			function animate() {
 				requestAnimationFrame( animate );
 				
-				sparseSceneParent.visible = SHOW_DENSE_SCENE ? false : true;
-				denseSceneParent.visible = SHOW_DENSE_SCENE ? true : false;
+				sparseSceneParent.visible = SHOW_DENSE_SCENE ? false : true;				
 				sfmCameraParent.visible = SHOW_SFM_CAMERA ? true : false;
+				denseSceneParent.visible = SHOW_DENSE_SCENE ? true : false;
 				
 				renderer.clear();
 			    renderer.render( scene, camera );
@@ -269,7 +269,7 @@
 			        		if (i<centerPoints.length) {
 			        			// draw query image
 			        			var queryImageName = new String(queryImages[i]).substring(queryImages[i].lastIndexOf('/') + 1);
-				        		createViewImage('data/offline/' + DATASET_NAME + '/image/' + queryImageName, 0.2);
+				        		createViewImage('data/offline/' + DATASET_NAME + '/image/' + queryImageName, 0.4);
 				        		
 				        		// draw localized point by query image
 				        		//drawPoint(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], 0xFF0000);
@@ -307,6 +307,8 @@
         			var height = e.target.height * scale;
         			
 	        	    var mapCanvas = document.createElement( 'canvas' );
+	        	    mapCanvas.width = width;
+	        	    mapCanvas.height = height;
 	        	    var ctx = mapCanvas.getContext( '2d' );
 	        	    ctx.translate(0, height);
 	        	    ctx.scale(1, -1);
@@ -318,7 +320,7 @@
 	                var material = new THREE.SpriteMaterial({map: texture, color: 0xFFFFFF});
 	                queryImageView = new THREE.Sprite(material);
 	                queryImageView.scale.set(width, height, 1);
-	                queryImageView.position.set(window.innerWidth-width*0.6, window.innerHeight-height*0.6, -9999);
+	                queryImageView.position.set(window.innerWidth-width*0.6, window.innerHeight-height*0.6, -1);
 	                scene2d.add(queryImageView);
 	        	};
 	        	image.src = imageUrl;
