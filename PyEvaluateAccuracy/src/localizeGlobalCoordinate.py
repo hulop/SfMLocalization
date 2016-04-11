@@ -25,7 +25,7 @@
 import argparse
 import os
 import sys
-import yajl as json
+import json
 import numpy as np
 import shutil
 import hulo_file.FileUtils as FileUtils

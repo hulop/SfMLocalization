@@ -23,7 +23,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-import yajl as json
+import json
 import numpy as np
 import scipy.sparse.csgraph
 import hulo_file.FileUtils as FileUtils

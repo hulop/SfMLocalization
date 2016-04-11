@@ -25,7 +25,7 @@
 import argparse
 import os
 import sys
-import yajl as json
+import json
 import shutil
 import hulo_file.PlyUtils as PlyUtis
 import hulo_param.ReconstructParam as ReconstructParam

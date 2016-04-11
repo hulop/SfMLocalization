@@ -34,7 +34,7 @@
 
 import argparse
 import sys
-import yajl as json
+import json
 import os
 import csv
 import hulo_file.FileUtils as FileUtils

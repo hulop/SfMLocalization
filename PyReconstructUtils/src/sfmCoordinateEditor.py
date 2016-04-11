@@ -31,7 +31,7 @@
 
 import argparse
 import os
-import yajl as json
+import json
 import cv2
 import scipy as scipy
 import numpy as np

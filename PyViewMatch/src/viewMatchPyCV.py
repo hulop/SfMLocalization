@@ -22,7 +22,7 @@
 
 import argparse
 import os
-import yajl as json
+import json
 import csv
 import scipy as sp
 import cv2

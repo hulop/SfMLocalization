@@ -31,7 +31,7 @@
 ################################################################################
 
 import argparse
-import yajl as json
+import json
 
 def main():
     description = 'This script is for modifying root path in OpenMVG output sfm_data.json file.' + \
