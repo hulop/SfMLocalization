@@ -89,13 +89,16 @@ LocalizeEngine::LocalizeEngine(const std::string sfmDataDir, const std::string m
 	regions.reset(new AKAZE_Binary_Regions);
 	mRegionsProvider = make_shared<Regions_Provider>();
 	if (!mRegionsProvider->load(mSfmData, mMatchDir, regions)) {
-		cerr << "Cannot construct regions providers," << endl;
+		cerr << "Cannot construct regions providers" << endl;
 	}
 
 	// get map of ViewID, FeatID to 3D point
 	hulo::structureToMapViewFeatTo3D(mSfmData.GetLandmarks(), mMapViewFeatTo3D);
 
 	cout << "Reading A mat file : " << AmatFile << endl;
+	if (!stlplus::file_exists(AmatFile)) {
+		cerr << "Cannot find A mat file" << endl;
+	}
 	cv::FileStorage storage(AmatFile, cv::FileStorage::READ);
 	storage["A"] >> mA;
 	storage.release();
@@ -103,6 +106,7 @@ LocalizeEngine::LocalizeEngine(const std::string sfmDataDir, const std::string m
 
 	// if BoW file exists, use BOW model
 	const string bowFile = stlplus::create_filespec(mMatchDir, "BOWfile", "yml");
+	cout << "Reading BOW file : " << bowFile << endl;
 	if (stlplus::file_exists(bowFile)) {
 		cout << "find BOW model : " << bowFile << endl;
 		if (bowKnnNum>0) {

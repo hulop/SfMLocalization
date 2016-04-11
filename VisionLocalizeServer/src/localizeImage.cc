@@ -236,35 +236,28 @@ Handle<Value> LocalizeImageBuffer(const Arguments& args) {
 		return scope.Close(Undefined());
 	}
 
-	Local<String> userID = args[0]->ToString();
-	char userIDChar[userID->Length()];
-	userID->WriteUtf8(userIDChar);
+	String::Utf8Value userID(args[0]->ToString());
+	const char* userIDChar = (const char*)(*userID);
 
-	Local<String> kMatFile = args[1]->ToString();
-	char kMatFileChar[kMatFile->Length()];
-	kMatFile->WriteUtf8(kMatFileChar);
+	String::Utf8Value kMatFile(args[1]->ToString());
+	const char* kMatFileChar = (const char*)(*kMatFile);
 
-	Local<String> distMatFile = args[2]->ToString();
-	char distMatFileChar[distMatFile->Length()];
-	distMatFile->WriteUtf8(distMatFileChar);
+	String::Utf8Value distMatFile(args[2]->ToString());
+	const char* distMatFileChar = (const char*)(*distMatFile);
 
 	double scaleImage = args[3]->NumberValue();
 
-	Local<String> mapID = args[4]->ToString();
-	char mapIDChar[mapID->Length()];
-	mapID->WriteUtf8(mapIDChar);
+	String::Utf8Value mapID(args[4]->ToString());
+	const char* mapIDChar = (const char*)(*mapID);
 
-	Local<String> sfmDataDir = args[5]->ToString();
-	char sfmDataDirChar[sfmDataDir->Length()];
-	sfmDataDir->WriteUtf8(sfmDataDirChar);
+	String::Utf8Value sfmDataDir(args[5]->ToString());
+	const char* sfmDataDirChar = (const char*)(*sfmDataDir);
 
-	Local<String> matchDir = args[6]->ToString();
-	char matchDirChar[matchDir->Length()];
-	matchDir->WriteUtf8(matchDirChar);
+	String::Utf8Value matchDir(args[6]->ToString());
+	const char* matchDirChar = (const char*)(*matchDir);
 
-	Local<String> aMatFile = args[7]->ToString();
-	char aMatFileChar[aMatFile->Length()];
-	aMatFile->WriteUtf8(aMatFileChar);
+	String::Utf8Value aMatFile(args[7]->ToString());
+	const char* aMatFileChar = (const char*)(*aMatFile);
 
 	bool bReturnKeypoints = args[8]->ToBoolean()->Value();
 
@@ -311,41 +304,33 @@ Handle<Value> LocalizeImagePath(const Arguments& args) {
 		return scope.Close(Undefined());
 	}
 
-	Local<String> userID = args[0]->ToString();
-	char userIDChar[userID->Length()];
-	userID->WriteUtf8(userIDChar);
+	String::Utf8Value userID(args[0]->ToString());
+	const char* userIDChar = (const char*)(*userID);
 
-	Local<String> kMatFile = args[1]->ToString();
-	char kMatFileChar[kMatFile->Length()];
-	kMatFile->WriteUtf8(kMatFileChar);
+	String::Utf8Value kMatFile(args[1]->ToString());
+	const char* kMatFileChar = (const char*)(*kMatFile);
 
-	Local<String> distMatFile = args[2]->ToString();
-	char distMatFileChar[distMatFile->Length()];
-	distMatFile->WriteUtf8(distMatFileChar);
+	String::Utf8Value distMatFile(args[2]->ToString());
+	const char* distMatFileChar = (const char*)(*distMatFile);
 
 	double scaleImage = args[3]->NumberValue();
 
-	Local<String> mapID = args[4]->ToString();
-	char mapIDChar[mapID->Length()];
-	mapID->WriteUtf8(mapIDChar);
+	String::Utf8Value mapID(args[4]->ToString());
+	const char* mapIDChar = (const char*)(*mapID);
 
-	Local<String> sfmDataDir = args[5]->ToString();
-	char sfmDataDirChar[sfmDataDir->Length()];
-	sfmDataDir->WriteUtf8(sfmDataDirChar);
+	String::Utf8Value sfmDataDir(args[5]->ToString());
+	const char* sfmDataDirChar = (const char*)(*sfmDataDir);
 
-	Local<String> matchDir = args[6]->ToString();
-	char matchDirChar[matchDir->Length()];
-	matchDir->WriteUtf8(matchDirChar);
+	String::Utf8Value matchDir(args[6]->ToString());
+	const char* matchDirChar = (const char*)(*matchDir);
 
-	Local<String> aMatFile = args[7]->ToString();
-	char aMatFileChar[aMatFile->Length()];
-	aMatFile->WriteUtf8(aMatFileChar);
+	String::Utf8Value aMatFile(args[7]->ToString());
+	const char* aMatFileChar = (const char*)(*aMatFile);
 
 	bool bReturnKeypoints = args[8]->ToBoolean()->Value();
 
-	Local<String> imagePath = args[9]->ToString();
-	char imagePathChar[imagePath->Length()];
-	imagePath->WriteUtf8(imagePathChar);
+	String::Utf8Value imagePath(args[9]->ToString());
+	const char* imagePathChar = (const char*)(*imagePath);
 	cv::Mat image = cv::imread(std::string(imagePathChar), cv::IMREAD_COLOR);
 	if (image.empty() || image.rows==0 || image.cols==0) {
 		ThrowException(Exception::TypeError(String::New("Input image is empty")));
@@ -387,35 +372,28 @@ Handle<Value> LocalizeImageBufferBeacon(const Arguments& args) {
 		return scope.Close(Undefined());
 	}
 
-	Local<String> userID = args[0]->ToString();
-	char userIDChar[userID->Length()];
-	userID->WriteUtf8(userIDChar);
+	String::Utf8Value userID(args[0]->ToString());
+	const char* userIDChar = (const char*)(*userID);
 
-	Local<String> kMatFile = args[1]->ToString();
-	char kMatFileChar[kMatFile->Length()];
-	kMatFile->WriteUtf8(kMatFileChar);
+	String::Utf8Value kMatFile(args[1]->ToString());
+	const char* kMatFileChar = (const char*)(*kMatFile);
 
-	Local<String> distMatFile = args[2]->ToString();
-	char distMatFileChar[distMatFile->Length()];
-	distMatFile->WriteUtf8(distMatFileChar);
+	String::Utf8Value distMatFile(args[2]->ToString());
+	const char* distMatFileChar = (const char*)(*distMatFile);
 
 	double scaleImage = args[3]->NumberValue();
 
-	Local<String> mapID = args[4]->ToString();
-	char mapIDChar[mapID->Length()];
-	mapID->WriteUtf8(mapIDChar);
+	String::Utf8Value mapID(args[4]->ToString());
+	const char* mapIDChar = (const char*)(*mapID);
 
-	Local<String> sfmDataDir = args[5]->ToString();
-	char sfmDataDirChar[sfmDataDir->Length()];
-	sfmDataDir->WriteUtf8(sfmDataDirChar);
+	String::Utf8Value sfmDataDir(args[5]->ToString());
+	const char* sfmDataDirChar = (const char*)(*sfmDataDir);
 
-	Local<String> matchDir = args[6]->ToString();
-	char matchDirChar[matchDir->Length()];
-	matchDir->WriteUtf8(matchDirChar);
+	String::Utf8Value matchDir(args[6]->ToString());
+	const char* matchDirChar = (const char*)(*matchDir);
 
-	Local<String> aMatFile = args[7]->ToString();
-	char aMatFileChar[aMatFile->Length()];
-	aMatFile->WriteUtf8(aMatFileChar);
+	String::Utf8Value aMatFile(args[7]->ToString());
+	const char* aMatFileChar = (const char*)(*aMatFile);
 
 	bool bReturnKeypoints = args[8]->ToBoolean()->Value();
 
@@ -428,9 +406,8 @@ Handle<Value> LocalizeImageBufferBeacon(const Arguments& args) {
 		return scope.Close(Undefined());
 	}
 
-	Local<String> beaconStr = args[10]->ToString();
-	char beaconStrChar[beaconStr->Length()];
-	beaconStr->WriteUtf8(beaconStrChar);
+	String::Utf8Value beaconStr(args[10]->ToString());
+	const char* beaconStrChar = (const char*)(*beaconStr);
 
 	Local<Array> result;
 	if (args.Length()==11) {
@@ -467,50 +444,41 @@ Handle<Value> LocalizeImagePathBeacon(const Arguments& args) {
 		return scope.Close(Undefined());
 	}
 
-	Local<String> userID = args[0]->ToString();
-	char userIDChar[userID->Length()];
-	userID->WriteUtf8(userIDChar);
+	String::Utf8Value userID(args[0]->ToString());
+	const char* userIDChar = (const char*)(*userID);
 
-	Local<String> kMatFile = args[1]->ToString();
-	char kMatFileChar[kMatFile->Length()];
-	kMatFile->WriteUtf8(kMatFileChar);
+	String::Utf8Value kMatFile(args[1]->ToString());
+	const char* kMatFileChar = (const char*)(*kMatFile);
 
-	Local<String> distMatFile = args[2]->ToString();
-	char distMatFileChar[distMatFile->Length()];
-	distMatFile->WriteUtf8(distMatFileChar);
+	String::Utf8Value distMatFile(args[2]->ToString());
+	const char* distMatFileChar = (const char*)(*distMatFile);
 
 	double scaleImage = args[3]->NumberValue();
 
-	Local<String> mapID = args[4]->ToString();
-	char mapIDChar[mapID->Length()];
-	mapID->WriteUtf8(mapIDChar);
+	String::Utf8Value mapID(args[4]->ToString());
+	const char* mapIDChar = (const char*)(*mapID);
 
-	Local<String> sfmDataDir = args[5]->ToString();
-	char sfmDataDirChar[sfmDataDir->Length()];
-	sfmDataDir->WriteUtf8(sfmDataDirChar);
+	String::Utf8Value sfmDataDir(args[5]->ToString());
+	const char* sfmDataDirChar = (const char*)(*sfmDataDir);
 
-	Local<String> matchDir = args[6]->ToString();
-	char matchDirChar[matchDir->Length()];
-	matchDir->WriteUtf8(matchDirChar);
+	String::Utf8Value matchDir(args[6]->ToString());
+	const char* matchDirChar = (const char*)(*matchDir);
 
-	Local<String> aMatFile = args[7]->ToString();
-	char aMatFileChar[aMatFile->Length()];
-	aMatFile->WriteUtf8(aMatFileChar);
+	String::Utf8Value aMatFile(args[7]->ToString());
+	const char* aMatFileChar = (const char*)(*aMatFile);
 
 	bool bReturnKeypoints = args[8]->ToBoolean()->Value();
 
-	Local<String> imagePath = args[9]->ToString();
-	char imagePathChar[imagePath->Length()];
-	imagePath->WriteUtf8(imagePathChar);
+	String::Utf8Value imagePath(args[9]->ToString());
+	const char* imagePathChar = (const char*)(*imagePath);
 	cv::Mat image = cv::imread(std::string(imagePathChar), cv::IMREAD_COLOR);
 	if (image.empty() || image.rows==0 || image.cols==0) {
 		ThrowException(Exception::TypeError(String::New("Input image is empty")));
 		return scope.Close(Undefined());
 	}
 
-	Local<String> beaconStr = args[10]->ToString();
-	char beaconStrChar[beaconStr->Length()];
-	beaconStr->WriteUtf8(beaconStrChar);
+	String::Utf8Value beaconStr(args[10]->ToString());
+	const char* beaconStrChar = (const char*)(*beaconStr);
 
 	Local<Array> result;
 	if (args.Length() == 11) {

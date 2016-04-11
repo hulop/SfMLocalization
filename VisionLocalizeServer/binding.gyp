@@ -71,7 +71,6 @@
 						"-llib_CoinUtils",
 						"-llib_Osi",
 						"-llib_clp",
-						"-lvlsift",
 						"-lflann_cpp_s",
 						"-llemon",
 						"-leasyexif",
