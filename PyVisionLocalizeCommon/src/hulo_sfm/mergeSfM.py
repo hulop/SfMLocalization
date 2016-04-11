@@ -39,6 +39,7 @@
 import os
 import sys
 import numpy as np
+from scipy.spatial import cKDTree
 from fileinput import filename
 import random
 import hulo_file.FileUtils as FileUtils
@@ -220,8 +221,11 @@ def get3DViewloc(sfm_data, listID):
     return listLoc
 
 # find RANSAC threshold as k times the median of distance between
-# consecutive point from input sfm_data
+# consecutive camera points from input sfm_data
 def findMedianThres(sfm_data, k):
+    if len(sfm_data["extrinsics"])<2:
+        return 0
+    
     distance = np.zeros([len(sfm_data["extrinsics"]) - 1, 1], dtype=np.float)
     
     X = np.asarray(sfm_data["extrinsics"][0]["value"]["center"]);
@@ -230,6 +234,28 @@ def findMedianThres(sfm_data, k):
         distance[i] = np.linalg.norm(X - Y)
         X = Y
 
+    return k * np.median(distance)
+
+# TODO : use this function when merging models
+# find RANSAC threshold as k times the median of distance between
+# structure points from input sfm_data
+def findMedianStructurePointsThres(sfm_data, k):
+    pointId, point = getAll3DPointloc(sfm_data)
+    pointn = np.asarray(point, dtype=np.float)
+    
+    if pointn.shape[0]<2:
+        return 0
+
+    kdtree = cKDTree(pointn)
+    
+    distance = np.zeros([pointn.shape[0], 1], dtype=np.float)
+    for i in range(0, pointn.shape[0]):
+        dist, indexes = kdtree.query(pointn[i], 2)
+        if len(dist)<2:
+            print "Error, array of distance between points should be larger than 1."
+            sys.exit()
+        distance[i] = dist[1]
+    
     return k * np.median(distance)
 
 # find s,R,T such that || sRA + T1' - B ||_F is minimized 
@@ -475,8 +501,12 @@ def mergeModel(sfm_data_dirA, sfm_data_dirB, locFolderB, outfile, ransacK=1.0, r
     # calculate as 4 times the median of distance between 
     # 3D pt of A 
     print "Find transformation with RANSAC"
-    ransacThres = findMedianThres(sfm_dataA, ransacK)
-    
+    # modified by T.Ishihara 2016.04.08
+    # median of camera positions merge too many points, use median of structure points instead
+    #ransacThres = findMedianThres(sfm_dataA, ransacK)
+    ransacThres = findMedianStructurePointsThres(sfm_dataA, ransacK)
+
+    # TODO : replace with RANSAC similarity transform
     # find robust transformation
     M, inliers = ransacAffineTransform(pointAn, pointBn, ransacThres, ransacRound, svdRatio)
     # cannot find RANSAC transformation

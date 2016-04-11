@@ -233,7 +233,7 @@ class sfmGraph:
                             model2.sfm_dataLoc,
                             model2.locFolLoc,
                             resultSfMDataFile,
-                            ransacK=reconParam.ransacThresMul,
+                            ransacK=reconParam.ransacStructureThresMul,
                             ransacRound=reconParam.ransacRoundMul*len(model1.reconFrame),
                             inputImgDir=self.mInputImgPath,
                             minLimit=reconParam.min3DnInliers) 
@@ -268,8 +268,10 @@ class sfmGraph:
                           # obsolete condition by T. Ishihara 2015.11.10
                           #"nInlierTmp > "+str(reconParam.vldMergeRatioInliersFileagree)+"*countFileAgree: " + str(nInlierTmp > reconParam.vldMergeRatioInliersFileagree*countFileAgree) + "\n" + \
                           "countFileAgree > "+str(reconParam.vldMergeMinCountFileAgree)+": " + str(countFileAgree > reconParam.vldMergeMinCountFileAgree) + "\n" + \
-                          "countFileAgree > "+str(reconParam.vldMergeSmallMinCountFileAgree)+": " + str(countFileAgree > reconParam.vldMergeSmallMinCountFileAgree) + "\n" + \
-                          "countFileLoc < countFileAgree*" +str(reconParam.vldMergeShortRatio)+ ": " + str(countFileLoc < countFileAgree*reconParam.vldMergeShortRatio) + "\n" + \
+                          # obsolete condition by T. Ishihara 2016.04.02
+                          #"countFileAgree > "+str(reconParam.vldMergeSmallMinCountFileAgree)+": " + str(countFileAgree > reconParam.vldMergeSmallMinCountFileAgree) + "\n" + \
+                          # obsolete condition by T. Ishihara 2016.04.02                          
+                          #"countFileLoc < countFileAgree*" +str(reconParam.vldMergeShortRatio)+ ": " + str(countFileLoc < countFileAgree*reconParam.vldMergeShortRatio) + "\n" + \
                           "ratioLocAgreeWithReconFrame: " + str(ratioAgreeFrameReconFrame) + "\n" + \
                           "ratioLocAgreeWithReconFrame > " + str(reconParam.vldMergeRatioAgrFReconF) + ": " + str(ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconF) + "\n" + \
                           "ratioLocAgreeWithLocFrame: " + str(ratioAgreeFrameLocFrame) + "\n" + \
@@ -290,10 +292,18 @@ class sfmGraph:
             (float(countFileAgree)/len(model2.reconFrame) > reconParam.vldMergeRatioAgrFReconF))):
         '''
         # update merge condition by T. Ishihara 2015.11.10
+        '''
         if not sfm_merge_generated or \
             not (countFileAgree > reconParam.vldMergeMinCountFileAgree and \
                  countFileAgree > reconParam.vldMergeSmallMinCountFileAgree and \
                  countFileLoc < countFileAgree*reconParam.vldMergeShortRatio and \
+                 ((nInlierTmp > reconParam.vldMergeNInliers and ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconFNInliers) or \
+                    ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconF) and \
+                 ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF):
+        '''
+        # update merge condition by T. Ishihara 2016.04.02
+        if not sfm_merge_generated or \
+            not (countFileAgree > reconParam.vldMergeMinCountFileAgree and \
                  ((nInlierTmp > reconParam.vldMergeNInliers and ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconFNInliers) or \
                     ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconF) and \
                  ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF):
@@ -312,8 +322,14 @@ class sfmGraph:
             " -o " + os.path.join(sfmOutPath,"colorized_pre.ply"))        
                 
         # perform bundle adjustment
+        # modified by T.Ishihara 2016.04.08
+        # fix only translation at first
+        '''
         os.system(reconParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + os.path.join(sfmOutPath,"sfm_data.json") + " " + os.path.join(sfmOutPath,"sfm_data.json") + \
                   " -c=" + "rs,rst,rsti" + " -r=" + "1")
+        '''
+        os.system(reconParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + os.path.join(sfmOutPath,"sfm_data.json") + " " + os.path.join(sfmOutPath,"sfm_data.json") + \
+                  " -c=" + "st,rst,rsti" + " -r=" + "1")
         
         os.system("openMVG_main_ComputeSfM_DataColor " +
             " -i " + os.path.join(sfmOutPath,"sfm_data.json") +

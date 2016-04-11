@@ -187,7 +187,8 @@ def main():
             return
         
         # find tranformation
-        Amat, inliers = mergeSfM.ransacAffineTransform(np.array(worldCoor).T, np.array(locCoor).T, 0.3, ransacRound=1000)
+        Amat, inliers = mergeSfM.ransacAffineTransform(np.array(worldCoor).T, np.array(locCoor).T, 
+                                                       reconstructParam.ransacThresTransformWorldCoordinateRefPoint, ransacRound=1000)
         
         if len(inliers) < 5:
             print "Cannot estimate transformation matrix to world coordinate"

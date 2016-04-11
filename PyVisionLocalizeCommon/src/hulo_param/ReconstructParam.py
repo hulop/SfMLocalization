@@ -123,6 +123,14 @@ class ReconstructParam:
     # mergeSfM.mergeModel arg ransacK
     ransacThresMul = 4.0
     
+    # TODO : use this parameter when merging models
+    # Threshold for RANSAC to match 3D points between model A and B is calculated
+    # via multiple of median of distance between structure points in 
+    # sfm_data.json of model A. This value specifies the number that multiplies 
+    # the median.
+    # mergeSfM.mergeModel arg ransacK
+    ransacStructureThresMul = 1.0
+    
     # Number of RANSAC round for merging two models. This number multiplies
     # number of reconstructed frames in model A, and will be used as
     # number of RANSAC round
@@ -158,8 +166,10 @@ class ReconstructParam:
     # vldMergeSmallMinCountFileAgree but less than vldMergeMinCountFileAgree, 
     # then to pass, we need
     # agreFrame*vldMergeShortRatio > locFrame
-    vldMergeSmallMinCountFileAgree = 15
-    vldMergeShortRatio = 2
+    # obsolete this condition by T. Ishihara 2016.04.02    
+    #vldMergeSmallMinCountFileAgree = 15
+    # obsolete this condition by T. Ishihara 2016.04.02
+    #vldMergeShortRatio = 2
     
     # The ratio between agreFrame and frames used in reconstruction
     vldMergeRatioAgrFReconF = 0.1
@@ -173,4 +183,16 @@ class ReconstructParam:
     vldMergeRatioAgrFReconFNInliers = 0.2
     
     # The ratio between agreFrame and locFrame
-    vldMergeRatioAgrFLocF = 0.6
+    # modified by T. Ishihara 2016.04.02
+    #vldMergeRatioAgrFLocF = 0.6
+    vldMergeRatioAgrFLocF = 0.4
+
+    ###############################################################################################
+    # localizeGlobalCoordinate
+    ###############################################################################################        
+    ransacThresTransformWorldCoordinateRefImage = 0.3
+
+    ###############################################################################################
+    # localizeGlobalCoordinateRefPoint
+    ###############################################################################################        
+    ransacThresTransformWorldCoordinateRefPoint = 0.1
