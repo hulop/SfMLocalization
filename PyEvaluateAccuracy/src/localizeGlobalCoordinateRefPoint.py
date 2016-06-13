@@ -213,8 +213,9 @@ def main():
         
         with open(os.path.join(REF_FOLDER,"Amat.txt"),"r") as AmatFile:
             Amat = np.loadtxt(AmatFile)
-                
+        
         print "point size before reducing : " + str(len(sfmData['structure']))
+        # TODO : revisit the threshold for reducing points
         #reduceClosePoints(sfmData, Amat, 0.01)
         reduceClosePointsKDTree(sfmData, Amat, 0.01, 1000)
         print "point size after reducing : " + str(len(sfmData['structure']))

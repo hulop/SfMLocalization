@@ -59,6 +59,7 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 app.get('/user/list', user.list);
 app.get('/user/history', user.history);
+app.post('/user/history', user.addHistory);
 app.get('/map/structure', map.structure);
 app.get('/map/camera', map.camera);
 app.get('/map/dense', map.dense);

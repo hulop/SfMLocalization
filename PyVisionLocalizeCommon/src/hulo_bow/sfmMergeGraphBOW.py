@@ -178,15 +178,21 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
         resultSfMDataFile = os.path.join(sfmOutPath,"sfm_data.json")
         # below also checks if the ratio between first and last svd of M[0:3,0:3] 
         # is good or not. If not then reject
-        nInlierTmp, M = mergeSfM.mergeModel(model1.sfm_dataLoc,
+        # TODO : revisit ransacRound parameter, use number of reconstruction frame to determine structure points transform seems small
+        nMatchPointsTmp, nInlierTmp, M = mergeSfM.mergeModel(model1.sfm_dataLoc,
                             model2.sfm_dataLoc,
                             model2.locFolLoc,
                             resultSfMDataFile,
                             ransacK=reconParam.ransacStructureThresMul,
-                            ransacRound=reconParam.ransacRoundMul*len(model1.reconFrame),
+                            mergePointK=reconParam.mergePointThresMul,
+                            ransacRoundMul=reconParam.ransacRoundMul,
                             inputImgDir=self.mInputImgPath,
-                            minLimit=reconParam.min3DnInliers) 
-
+                            minLimit=reconParam.min3DnInliers)
+        
+        ratioInlierMatchPoints = 0.0
+        if nMatchPointsTmp>0:
+            ratioInlierMatchPoints = float(nInlierTmp)/nMatchPointsTmp
+        
         # 3. perform test whether merge is good
         sfm_merge_generated = True
         countFileAgree = 0
@@ -208,7 +214,9 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
         with open(os.path.join(self.mSfMPath,"global"+str(self.nMergedModel),"log.txt"),"a") as filelog:
             filelog.write(("M1: " + model1.name + "\n" + \
                           "M2: " + model2.name + "\n" + \
+                          "nMatchedPoints: " + str(nMatchPointsTmp) + "\n" + \
                           "nInliers: " + str(nInlierTmp) + "\n" + \
+                          "ratioInlierWithMatchedPoints: " + str(ratioInlierMatchPoints) + "\n" + \
                           "countLocFrame: " + str(countLocFrame) + "\n" + \
                           "nReconFrame M2: " + str(len(model2.reconFrame)) + "\n" + \
                           "countFileAgree: " + str(countFileAgree) + "\n" + \
@@ -228,10 +236,12 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
                           str(M) + "\n\n"))
        
         # rename the localization folder to save localization result
+        '''
         if os.path.isdir(model2.locFolLoc+model1.name):
             FileUtils.removedir(model2.locFolLoc+model1.name)
         os.rename(model2.locFolLoc,model2.locFolLoc+model1.name)
-
+        '''
+        
         # obsolete merge condition
         '''
         if not sfm_merge_generated or \
@@ -251,17 +261,27 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
                  ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF):
         '''
         # update merge condition by T. Ishihara 2016.04.02
+        '''
         if not sfm_merge_generated or \
             not (countFileAgree > reconParam.vldMergeMinCountFileAgree and \
                  ((nInlierTmp > reconParam.vldMergeNInliers and ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconFNInliers) or \
                     ratioAgreeFrameReconFrame > reconParam.vldMergeRatioAgrFReconF) and \
                  ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF):
+        '''
+        # update merge condition by T. Ishihara 2016.06.09
+        if not sfm_merge_generated or \
+            not (countFileAgree > reconParam.vldMergeMinCountFileAgree and \
+                 ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF and \
+                 nInlierTmp > reconParam.min3DnInliers and \
+                 ratioInlierMatchPoints > reconParam.vldMergeRatioInliersMatchPoints):
             print "Transformed locations do not agree with localization. Skip merge between " + model1.name + " and " + model2.name + "."
             
+            '''
             if os.path.isfile(os.path.join(sfmOutPath,"sfm_data.json")):
                 os.rename(os.path.join(sfmOutPath,"sfm_data.json"), \
                           os.path.join(sfmOutPath,"sfm_data_("+model1.name + "," + model2.name+").json"))
-                               
+            '''
+                            
             # move to next video
             return False, sfmModelBOW("","","","","","")
                 
@@ -269,10 +289,15 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
         os.system("openMVG_main_ComputeSfM_DataColor " +
             " -i " + os.path.join(sfmOutPath,"sfm_data.json") +
             " -o " + os.path.join(sfmOutPath,"colorized_pre.ply"))        
-                
+        
+        # TODO : revisit the order of bundle adjustment
         # perform bundle adjustment
+        '''
         os.system(reconParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + os.path.join(sfmOutPath,"sfm_data.json") + " " + os.path.join(sfmOutPath,"sfm_data.json") + \
                   " -c=" + "rs,rst,rsti" + " -r=" + "1")
+        '''
+        os.system(reconParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + os.path.join(sfmOutPath,"sfm_data.json") + " " + os.path.join(sfmOutPath,"sfm_data.json") + \
+                  " -c=" + "rst,rsti" + " -r=" + "1")
         
         os.system("openMVG_main_ComputeSfM_DataColor " +
             " -i " + os.path.join(sfmOutPath,"sfm_data.json") +

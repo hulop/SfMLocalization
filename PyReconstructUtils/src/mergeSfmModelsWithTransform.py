@@ -183,10 +183,10 @@ def main():
             if len(sfmViewBeaconDataList)>0:
                 mergeSfmViewBeaconData = sfmViewBeaconDataList[0]
         else:
-            ransacThres = mergeSfM.findMedianStructurePointsThres(mergeSfmData, reconstructParam.ransacStructureThresMul)
-            print "thres to merge 3D points : " + str(ransacThres)
+            mergePointThres = mergeSfM.findMedianStructurePointsThres(mergeSfmData, reconstructParam.mergePointThresMul)
+            print "thres to merge 3D points : " + str(mergePointThres)
             
-            inlierMap = findInliersByKnownTransform(mergePointId, pointIdList[idx], mergePointn, pointList[idx], AList[idx], ransacThres)
+            inlierMap = findInliersByKnownTransform(mergePointId, pointIdList[idx], mergePointn, pointList[idx], AList[idx], mergePointThres)
             print "number of points in base model : " + str(len(mergePointn[0]))
             print "number of points in model " + str(idx) + " : " + str(len(pointList[idx]))
             print "number of inliers : " + str(len(inlierMap))

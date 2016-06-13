@@ -44,7 +44,7 @@
 								<option id="gnu.cpp.compiler.option.other.other.131074810" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11 -fopenmp" valueType="string"/>
 								<option id="gnu.cpp.compiler.option.dialect.std.614688987" name="Language standard" superClass="gnu.cpp.compiler.option.dialect.std" useByScannerDiscovery="true" value="gnu.cpp.compiler.dialect.default" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.other.pic.443136589" name="Position Independent Code (-fPIC)" superClass="gnu.cpp.compiler.option.other.pic" useByScannerDiscovery="false" value="false" valueType="boolean"/>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.610266056" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+								<option id="gnu.cpp.compiler.option.preprocessor.def.610266056" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="EIGEN_MPL2_ONLY"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.615726141" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -57,12 +57,12 @@
 									<listOptionValue builtIn="false" value="/opt/opencv-3.0.0/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.1605895483" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="opencv_flann"/>
-									<listOptionValue builtIn="false" value="opencv_highgui"/>
-									<listOptionValue builtIn="false" value="opencv_features2d"/>
-									<listOptionValue builtIn="false" value="opencv_imgproc"/>
-									<listOptionValue builtIn="false" value="opencv_imgcodecs"/>
-									<listOptionValue builtIn="false" value="opencv_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_flann.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_highgui.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_features2d.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_imgproc.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_imgcodecs.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_core.so.3.0"/>
 									<listOptionValue builtIn="false" value="openMVG_sfm"/>
 									<listOptionValue builtIn="false" value="openMVG_features"/>
 									<listOptionValue builtIn="false" value="openMVG_matching_image_collection"/>
@@ -136,7 +136,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/VisionLocalizeCommon/src}&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.other.other.1316313545" name="Other flags" superClass="gnu.cpp.compiler.option.other.other" useByScannerDiscovery="false" value="-c -fmessage-length=0 -std=c++11 -fopenmp" valueType="string"/>
-								<option id="gnu.cpp.compiler.option.preprocessor.def.1320046780" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1320046780" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="EIGEN_MPL2_ONLY"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.255424792" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
@@ -149,12 +149,12 @@
 									<listOptionValue builtIn="false" value="/usr/local/lib"/>
 								</option>
 								<option id="gnu.cpp.link.option.libs.1038779948" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="opencv_flann"/>
-									<listOptionValue builtIn="false" value="opencv_highgui"/>
-									<listOptionValue builtIn="false" value="opencv_features2d"/>
-									<listOptionValue builtIn="false" value="opencv_imgproc"/>
-									<listOptionValue builtIn="false" value="opencv_imgcodecs"/>
-									<listOptionValue builtIn="false" value="opencv_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_flann.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_highgui.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_features2d.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_imgproc.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_imgcodecs.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_core.so.3.0"/>
 									<listOptionValue builtIn="false" value="openMVG_sfm"/>
 									<listOptionValue builtIn="false" value="openMVG_features"/>
 									<listOptionValue builtIn="false" value="openMVG_matching_image_collection"/>
@@ -165,7 +165,7 @@
 									<listOptionValue builtIn="false" value="openMVG_image"/>
 									<listOptionValue builtIn="false" value="openMVG_kvld"/>
 									<listOptionValue builtIn="false" value="stlplus"/>
-									<listOptionValue builtIn="false" value="pthread"/>
+									<listOptionValue builtIn="false" value="pthread"/>									
 								</option>
 								<option id="gnu.cpp.link.option.flags.310033181" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fopenmp" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1355060627" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">

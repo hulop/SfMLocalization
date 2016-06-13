@@ -91,12 +91,13 @@
 									<listOptionValue builtIn="false" value="openMVG_lInftyComputerVision"/>
 									<listOptionValue builtIn="false" value="openMVG_system"/>
 									<listOptionValue builtIn="false" value="openMVG_image"/>
-									<listOptionValue builtIn="false" value="opencv_flann"/>
-									<listOptionValue builtIn="false" value="opencv_xfeatures2d"/>
-									<listOptionValue builtIn="false" value="opencv_features2d"/>
-									<listOptionValue builtIn="false" value="opencv_imgcodecs"/>
-									<listOptionValue builtIn="false" value="opencv_highgui"/>
-									<listOptionValue builtIn="false" value="opencv_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_flann.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_xfeatures2d.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_features2d.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_imgproc.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_imgcodecs.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_highgui.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_core.so.3.0"/>									
 									<listOptionValue builtIn="false" value="openMVG_kvld"/>
 									<listOptionValue builtIn="false" value="stlplus"/>
 									<listOptionValue builtIn="false" value="ceres"/>
@@ -115,7 +116,6 @@
 									<listOptionValue builtIn="false" value="flann_cpp_s"/>
 									<listOptionValue builtIn="false" value="lemon"/>
 									<listOptionValue builtIn="false" value="easyexif"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgproc"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.219449197" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fopenmp" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1067439067" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
@@ -223,12 +223,13 @@
 									<listOptionValue builtIn="false" value="openMVG_lInftyComputerVision"/>
 									<listOptionValue builtIn="false" value="openMVG_system"/>
 									<listOptionValue builtIn="false" value="openMVG_image"/>
-									<listOptionValue builtIn="false" value="opencv_flann"/>
-									<listOptionValue builtIn="false" value="opencv_xfeatures2d"/>
-									<listOptionValue builtIn="false" value="opencv_features2d"/>
-									<listOptionValue builtIn="false" value="opencv_imgcodecs"/>
-									<listOptionValue builtIn="false" value="opencv_highgui"/>
-									<listOptionValue builtIn="false" value="opencv_core"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_flann.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_xfeatures2d.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_features2d.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_imgproc.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_imgcodecs.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_highgui.so.3.0"/>
+									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value=":libopencv_core.so.3.0"/>									
 									<listOptionValue builtIn="false" value="openMVG_kvld"/>
 									<listOptionValue builtIn="false" value="stlplus"/>
 									<listOptionValue builtIn="false" value="ceres"/>
@@ -247,7 +248,6 @@
 									<listOptionValue builtIn="false" value="flann_cpp_s"/>
 									<listOptionValue builtIn="false" value="lemon"/>
 									<listOptionValue builtIn="false" value="easyexif"/>
-									<listOptionValue builtIn="false" srcPrefixMapping="" srcRootPath="" value="opencv_imgproc"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.759345786" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fopenmp" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.573197186" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">

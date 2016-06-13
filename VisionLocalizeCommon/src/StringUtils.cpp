@@ -24,10 +24,6 @@
 
 using namespace std;
 
-//
-// TODO : T. Isihara 2015/09/24
-// a.erase(last+1) is working correctly ??
-//
 string hulo::trim(string s) {
 	string a(s);
 	string whitespace(" \t\f\v\n\r");

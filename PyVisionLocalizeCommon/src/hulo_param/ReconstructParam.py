@@ -116,30 +116,36 @@ class ReconstructParam:
     
     # merge params
     
-    # Threshold for RANSAC to match 3D points between model A and B is calculated
-    # via multiple of median of distance between consecutive camera frames in 
-    # sfm_data.json of model A. This value specifies the number that multiplies 
-    # the median.
-    # mergeSfM.mergeModel arg ransacK
-    ransacThresMul = 4.0
-    
-    # TODO : use this parameter when merging models
+    # TODO : revisit this parameter
     # Threshold for RANSAC to match 3D points between model A and B is calculated
     # via multiple of median of distance between structure points in 
     # sfm_data.json of model A. This value specifies the number that multiplies 
     # the median.
     # mergeSfM.mergeModel arg ransacK
-    ransacStructureThresMul = 1.0
+    ransacStructureThresMul = 10.0
     
+    # TODO : revisit this parameter
+    # threshold to decide 3D points in merged models will be merged
+    # multiplying this value and median distance between structured points will be threshold
+    # this parameter is added by T. Ishihara 2016.06.06
+    # previously ransacStructureThresMul is used for the same purpose
+    mergePointThresMul = 0.01
+    
+    # TODO : revisit this parameter
+    # modified this parameter 4 -> 100 by T. Ishihara 2016.06.07
     # Number of RANSAC round for merging two models. This number multiplies
-    # number of reconstructed frames in model A, and will be used as
+    # number of matched points between merging models, and will be used as
     # number of RANSAC round
     # mergeSfM.mergeModel arg ransacRound
-    ransacRoundMul = 4
+    ransacRoundMul = 100
     
+    # TODO : revisit this parameter, number of minimun inliers should be defined by sfm data size?
+    #    modified by T.Ishihara 2016.06.09
+    #    100 -> 10
     # Number of 3D inliers after RANSAC to return affine transformation matrix
     # mergeSfM.mergeModel arg minLimit
-    min3DnInliers = 100
+    #min3DnInliers = 100
+    min3DnInliers = 10
     
     # merge validation params
     
@@ -147,6 +153,7 @@ class ReconstructParam:
     # locFrame means localized frame
     # agrFrame means localized frame that agrees with transformation (see  vldMergeAgrFrameThresK)
     
+    # TODO : revisit this parameter
     # Localized frames that agree with transformation is defined as frames that 
     # are localized where its location agrees with the location obtained by 
     # transformimd its 3D model with affine transformation. This agreement is
@@ -158,8 +165,11 @@ class ReconstructParam:
     # ratio between number of inliers against number of agrFrame
     #vldMergeRatioInliersFileagree = 1.5
     
+    #    modified by T.Ishihara 2016.06.09
+    #    30 -> 10
     # minimum number of agrFrame
-    vldMergeMinCountFileAgree = 30
+    #vldMergeMinCountFileAgree = 30
+    vldMergeMinCountFileAgree = 10
     
     # The following two values are related and are used in case
     # of small number of locFrame. If no. of agrFrame is more than 
@@ -182,11 +192,16 @@ class ReconstructParam:
     vldMergeNInliers = 500
     vldMergeRatioAgrFReconFNInliers = 0.2
     
+    # TODO : revisit this parameter
     # The ratio between agreFrame and locFrame
     # modified by T. Ishihara 2016.04.02
     #vldMergeRatioAgrFLocF = 0.6
     vldMergeRatioAgrFLocF = 0.4
-
+    
+    # 2016.06.09
+    # new condition
+    vldMergeRatioInliersMatchPoints = 0.4
+    
     ###############################################################################################
     # localizeGlobalCoordinate
     ###############################################################################################        

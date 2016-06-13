@@ -28,7 +28,6 @@ import matplotlib.pyplot as plt
 import time
 import os
 import json
-import scipy.spatial.distance
 
 # parse beacon setting file and extract information, which is
 # number of beacon, and beacon map from (major,minor) to index
@@ -59,11 +58,11 @@ def parseBeaconList(line,beaconmap):
     
     rssi = np.zeros(len(beaconmap),dtype=np.float32)
     
-    for i in range(0,int(line[0])+1):
+    for i in range(0,int(line[0])):
         # read value
-        major = int(line[3*(i-1)+1])
-        minor = int(line[3*(i-1)+2])
-        strength = int(line[3*(i-1)+3])
+        major = int(line[3*i+1])
+        minor = int(line[3*i+2])
+        strength = int(line[3*i+3])
          
         # convert value             
         if strength != 0:
@@ -182,6 +181,9 @@ def calBeaconDistance(vec1,vec2):
     
     return np.sum((vec1 > 0) * (vec2 > 0) * np.abs(vec1-vec2)) / denom
 
+#################################################
+#Note that this function is already obsoleted
+#################################################
 #generate pair via beacon similarity
 def genBeaconSimPair(imgBeaconMap,knn,distance,cooccur):   
         
@@ -218,6 +220,55 @@ def genBeaconSimPair(imgBeaconMap,knn,distance,cooccur):
         plt.draw()
         time.sleep(10)
     
+    return pairs
+
+#generate pair via beacon similarity
+def genBeaconSimKnnPair(imgBeaconMap,knn,cooccur):
+    print "start find beacon similarity knn view..."
+    if knn>len(imgBeaconMap):
+        print "Error : knn is larger than number of image views"
+        sys.exit()
+    
+    # calculate dist
+    print "start calculating beacon distance for all views..."        
+    viewIDs = imgBeaconMap.keys()
+    distMat = np.zeros([len(viewIDs),len(viewIDs)],dtype=np.float32)
+    for i in range(0,len(viewIDs)-1):
+        for j in range(i+1,len(viewIDs)):
+            viewID1 = viewIDs[i]
+            viewID2 = viewIDs[j]
+            
+            distTmp = calBeaconDistance(imgBeaconMap[viewID1]["rssi"],imgBeaconMap[viewID2]["rssi"])
+            
+            distMat[i,j] = distTmp
+            distMat[j,i] = distTmp
+
+    distListMap = {}
+    for i in range(0,len(viewIDs)):
+        viewID1 = viewIDs[i]
+        distances = []
+        for j in range(0,len(viewIDs)):
+            viewID2 = viewIDs[j]
+            distances.append(distMat[i][j])
+        distances.sort()
+        distListMap[viewID1] = distances
+    print "finish calculating beacon distance for all views."
+    
+    # calculate coocur and select pairs
+    print "start calculating beacon cooccurance and select knn views..."    
+    pairs = []
+    for i in range(0,len(viewIDs)-1):
+        for j in range(i+1,len(viewIDs)):
+            viewID1 = viewIDs[i]
+            viewID2 = viewIDs[j]
+            
+            cooccurTmp = calBeaconCoocur(imgBeaconMap[viewID1]["rssi"],imgBeaconMap[viewID2]["rssi"])                    
+            if cooccurTmp >= cooccur:
+                dist = distMat[i, j]                        
+                if (dist<=distListMap[viewID1][knn+1] or dist<=distListMap[viewID2][knn+1]):
+                    pairs = pairs + [(viewID1,viewID2)]
+    
+    print "finish finding beacon similarity knn view."
     return pairs
 
 # gen pair based on location in sfm_data (1 nearest neighbor)   
