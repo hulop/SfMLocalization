@@ -195,12 +195,17 @@ class ReconstructParam:
     # TODO : revisit this parameter
     # The ratio between agreFrame and locFrame
     # modified by T. Ishihara 2016.04.02
-    #vldMergeRatioAgrFLocF = 0.6
+    #    0.6 -> 0.4
     vldMergeRatioAgrFLocF = 0.4
     
     # 2016.06.09
     # new condition
-    vldMergeRatioInliersMatchPoints = 0.4
+    # 2016.06.14 modified 0.4 -> 0.7
+    vldMergeRatioInliersMatchPoints = 0.7
+    
+    # 2016.06.14
+    # new condition
+    vldMergeMinLocF = 20
     
     ###############################################################################################
     # localizeGlobalCoordinate

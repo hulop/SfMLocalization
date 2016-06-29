@@ -52,6 +52,13 @@ using namespace openMVG::matching;
 using namespace hulo;
 
 namespace {
+	/*
+	 * if this flag is set true, localization will be performed in global coordinate.
+	 * if false, localization will be performed in relative coordinate and result will be converted to global coordinate.
+	 * results should be same for both options
+	 */
+	bool TRANSFORM_SFM_DATA_BEFORE_LOCALIZE = true;
+
 	int MINUM_NUMBER_OF_POINT_PUTATIVE_MATCH = 16;
 	int MINUM_NUMBER_OF_POINT_RESECTION = 8;
 	int MINUM_NUMBER_OF_INLIER_RESECTION = 10;
@@ -103,6 +110,31 @@ LocalizeEngine::LocalizeEngine(const std::string sfmDataDir, const std::string m
 	storage["A"] >> mA;
 	storage.release();
 	cout << "Loaded A mat : " << mA << endl;
+
+	// transform coordinate of sfm_data
+	if (TRANSFORM_SFM_DATA_BEFORE_LOCALIZE) {
+		Eigen::Matrix<double,Dynamic,Dynamic> eigA;
+		cv2eigen(mA, eigA);
+
+		Eigen::Matrix<double,Dynamic,Dynamic> eigR;
+		cv2eigen(mA(cv::Rect(0,0,3,3)), eigR);
+
+		// Transform the landmark positions
+		for (auto & iterLandMark : mSfmData.structure) {
+			Vec3 center = iterLandMark.second.X;
+			Vec4 center_h = Vec4(center(0), center(1), center(2), 1.0);
+			iterLandMark.second.X = eigA*center_h;
+		}
+
+		// Transform the camera positions
+		for (auto & iterPose : mSfmData.poses) {
+			geometry::Pose3 pose = iterPose.second;
+			Mat3 rot = pose.rotation();
+			Vec3 center = pose.center();
+			Vec4 center_h = Vec4(center(0), center(1), center(2), 1.0);
+			iterPose.second = geometry::Pose3(rot*eigR.transpose(), eigA*center_h);
+		}
+	}
 
 	// if BoW file exists, use BOW model
 	const string bowFile = stlplus::create_filespec(mMatchDir, "BOWfile", "yml");
@@ -425,11 +457,15 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 		return result;
 	}
 
-	shared_ptr<Matches_Provider> matches_provider = make_shared<Matches_Provider>();
-	matches_provider->_pairWise_matches = map_geometricMatches;
-
 	// build list of tracks
+	shared_ptr<Matches_Provider> matches_provider = make_shared<Matches_Provider>();
+#if (OPENMVG_VERSION_MAJOR<1)
+	matches_provider->_pairWise_matches = map_geometricMatches;
 	cout << "Match provider size " << matches_provider->_pairWise_matches.size() << endl;
+#else
+	matches_provider->pairWise_matches_ = map_geometricMatches;
+	cout << "Match provider size " << matches_provider->pairWise_matches_.size() << endl;
+#endif
 
 	// intersect tracks from query image to reconstructed 3D
 	// any 2D pts that have been matched to more than one 3D point will be removed
@@ -478,15 +514,20 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 		points2D = points2D.t();
 
 		// collect keypoints in 3D
-		cv::Mat locPoints3D;
-		cv::eigen2cv(resection_data.pt3D, locPoints3D);
-		CV_Assert(locPoints3D.rows==3);
+		if (TRANSFORM_SFM_DATA_BEFORE_LOCALIZE) {
+			cv::eigen2cv(resection_data.pt3D, points3D);
+			points3D = points3D.t();
+		} else {
+			cv::Mat locPoints3D;
+			cv::eigen2cv(resection_data.pt3D, locPoints3D);
+			CV_Assert(locPoints3D.rows==3);
 
-		cv::Mat locPoints3Dh = cv::Mat::ones(4, locPoints3D.cols, CV_64F);
-		locPoints3D.copyTo(locPoints3Dh(cv::Rect(0,0,locPoints3D.cols,3)));
+			cv::Mat locPoints3Dh = cv::Mat::ones(4, locPoints3D.cols, CV_64F);
+			locPoints3D.copyTo(locPoints3Dh(cv::Rect(0,0,locPoints3D.cols,3)));
 
-		cv::Mat globalPoints3D = mA * locPoints3Dh;
-		points3D = globalPoints3D(cv::Rect(0,0,globalPoints3D.cols,3)).clone().t();
+			cv::Mat globalPoints3D = mA * locPoints3Dh;
+			points3D = globalPoints3D(cv::Rect(0,0,globalPoints3D.cols,3)).clone().t();
+		}
 
 		// collect inlier keypoints
 		copy(resection_data.vec_inliers.begin(), resection_data.vec_inliers.end(), back_inserter(pointsInlier));
@@ -525,24 +566,36 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 	cout << "t = " << endl << t_ << endl;
 	cout << "-R't = " << endl << -R_.transpose() * t_ << endl;
 
-	cv::Mat t_out_h(4, 1, CV_64F);
-	t_out_h.at<double>(0) = t_out[0];
-	t_out_h.at<double>(1) = t_out[1];
-	t_out_h.at<double>(2) = t_out[2];
-	t_out_h.at<double>(3) = 1.0;
-	cv::Mat global_t_out = mA * t_out_h;
-	cout << "global t = " << endl << global_t_out << endl;
-	for (int i=0; i<3; i++) {
-		result.push_back(global_t_out.at<double>(i));
-	}
+	if (TRANSFORM_SFM_DATA_BEFORE_LOCALIZE) {
+		for (int i=0; i<3; i++) {
+			result.push_back(t_out[i]);
+		}
 
-	cv::Mat cvR_;
-	cv::eigen2cv(R_, cvR_);
-	cv::Mat global_R = mA(cv::Rect(0,0,3,3)) * cvR_;
-	cout << "global R = " << endl << global_R << endl;
-	for (int i=0; i<3; i++) {
-		for (int j=0; j<3; j++) {
-			result.push_back(global_R.at<double>(i,j));
+		for (int i=0; i<3; i++) {
+			for (int j=0; j<3; j++) {
+				result.push_back(R_(i,j));
+			}
+		}
+	} else {
+		cv::Mat t_out_h(4, 1, CV_64F);
+		t_out_h.at<double>(0) = t_out[0];
+		t_out_h.at<double>(1) = t_out[1];
+		t_out_h.at<double>(2) = t_out[2];
+		t_out_h.at<double>(3) = 1.0;
+		cv::Mat global_t_out = mA * t_out_h;
+		cout << "global t = " << endl << global_t_out << endl;
+		for (int i=0; i<3; i++) {
+			result.push_back(global_t_out.at<double>(i));
+		}
+
+		cv::Mat cvR_;
+		cv::eigen2cv(R_, cvR_);
+		cv::Mat global_R = cvR_ * mA(cv::Rect(0,0,3,3)).t();
+		cout << "global R = " << endl << global_R << endl;
+		for (int i=0; i<3; i++) {
+			for (int j=0; j<3; j++) {
+				result.push_back(global_R.at<double>(i,j));
+			}
 		}
 	}
 

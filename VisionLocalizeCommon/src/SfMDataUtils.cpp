@@ -62,9 +62,13 @@ void hulo::matchProviderToMatchSet(const std::shared_ptr<Matches_Provider> &matc
 	std::map<std::size_t, std::pair<std::size_t,float> > mapTmp;
 
 	// iterate over view pairs
+#if (OPENMVG_VERSION_MAJOR<1)
 	for(PairWiseMatches::const_iterator iter = (match_provider.get()->_pairWise_matches).begin();
 			iter != (match_provider.get()->_pairWise_matches).end(); iter++){
-
+#else
+	for(PairWiseMatches::const_iterator iter = (match_provider.get()->pairWise_matches_).begin();
+			iter != (match_provider.get()->pairWise_matches_).end(); iter++){
+#endif
 		// iterate over match pairs in each view pair
 		for(IndMatches::const_iterator iterMatch = (iter->second).begin();
 				iterMatch!=(iter->second).end();
@@ -74,14 +78,26 @@ void hulo::matchProviderToMatchSet(const std::shared_ptr<Matches_Provider> &matc
 			if(mapViewFeatTo3D.find(iter->first.first)!=mapViewFeatTo3D.end()){
 
 				// if the view exists, check that the feature exists in that view
+#if (OPENMVG_VERSION_MAJOR<1)
 				if(mapViewFeatTo3D.find(iter->first.first)->second.find(iterMatch->_i)
 						!=mapViewFeatTo3D.find(iter->first.first)->second.end()){
-
+#else
+				if(mapViewFeatTo3D.find(iter->first.first)->second.find(iterMatch->i_)
+						!=mapViewFeatTo3D.find(iter->first.first)->second.end()){
+#endif
 					// get feature key from query image
+#if (OPENMVG_VERSION_MAJOR<1)
 					std::size_t qFeatKey = iterMatch->_j;
+#else
+					std::size_t qFeatKey = iterMatch->j_;
+#endif
 
 					// get feature key of 3d reconstruction
+#if (OPENMVG_VERSION_MAJOR<1)
 					std::size_t reconFeatKey = mapViewFeatTo3D.find(iter->first.first)->second.find(iterMatch->_i)->second;
+#else
+					std::size_t reconFeatKey = mapViewFeatTo3D.find(iter->first.first)->second.find(iterMatch->i_)->second;
+#endif
 
 					// add as a pair
 					std::pair<std::size_t, std::size_t> pairInd = std::make_pair(iter->first.first, iter->first.second);

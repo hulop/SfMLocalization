@@ -378,13 +378,24 @@ def ransacAffineTransform(A, B, thres, ransacRound, svdRatio=sys.float_info.max)
                 nInliers = nInliersTmp
                 inliers = inliersTmp
             
-    if len(inliers)==0:
-        return np.array([]), inliers
+    if len(inliers)<4:
+        return np.array([]), np.asarray([])
     
     M = np.linalg.lstsq(B[:, inliers].T, A[:, inliers].T)[0].T
     
     print "Number of ransac inliers: " + str(nInliers)
     return M, inliers
+
+#
+# TODO : create AC-RANSAC version, or LO-RANSAC version
+# setting good threshold for unscaled 3D model is difficult
+#
+def ransacTransform(A, B, thres, ransacRound, svdRatio=sys.float_info.max):
+    try:
+        ransacTransform = __import__("hulo_transform.ransacTransform")        
+        return ransacTransform.ransacTransform.ransacSimilarityTransform(A, B, thres, ransacRound, svdRatio)
+    except ImportError:
+        return ransacAffineTransform(A, B, thres, ransacRound, svdRatio)
 
 # return inliers for given affine transformation
 # A and B : both 3 x n, and input 3D points
@@ -400,7 +411,7 @@ def getInliersByAffineTransform(A, B, M, thres):
     inliers = np.where(normVal < thres)[0]
     nInliers = len(inliers)
     
-    print "Number of inliers for affine transform : " + str(nInliers)
+    print "Number of inliers for given transform : " + str(nInliers)
     return inliers
 
 # transform coordinate of sfm_data with M as transformation matrix
@@ -485,7 +496,7 @@ def merge_sfm_data(sfm_dataA, sfm_dataB, M, inlierMapBA, sfmViewBeaconDataA=None
     # copy structure
     for strKey in range(0,len(sfm_dataB['structure'])):
         stru = sfm_dataB['structure'][strKey]
-         
+        
         # if this point matches to a 3D point in model A then merge
         if stru["key"] in inlierMapBA:
             ptAkey = inlierMapBA[stru["key"]] # key/ID of this point in model A
@@ -498,7 +509,6 @@ def merge_sfm_data(sfm_dataA, sfm_dataB, M, inlierMapBA, sfmViewBeaconDataA=None
          
         # if has no match then add to the end of point list of model A
         else:
-              
             # update view ID for all observations
             for ptB in stru["value"]["observations"]:
                 ptB["key"] = firstViewB + ptB["key"] 
@@ -520,7 +530,7 @@ def merge_sfm_data(sfm_dataA, sfm_dataB, M, inlierMapBA, sfmViewBeaconDataA=None
 # merge 3D models given path to sfm_dataA, sfm_dataB, loc_folderB
 # minLimit is minimum number of match between 3D models found before considering merging
 # return the number of inliers for transformation
-def mergeModel(sfm_data_dirA, sfm_data_dirB, locFolderB, outfile, ransacK=1.0, mergePointK=0.01, ransacRoundMul=100, inputImgDir="", minLimit=4, svdRatio=1.75):
+def mergeModel(sfm_data_dirA, sfm_data_dirB, locFolderB, outfile, ransacThres, mergePointThres, ransacRoundMul=100, inputImgDir="", minLimit=4, svdRatio=1.75):
     
     print "Loading sfm_data"
     sfm_dataB = FileUtils.loadjson(sfm_data_dirB)
@@ -541,7 +551,7 @@ def mergeModel(sfm_data_dirA, sfm_data_dirB, locFolderB, outfile, ransacK=1.0, m
     
     # not enough matches
     if len(match3D_BA) <= 4 or len(match3D_BA) <= minLimit:
-        return len(match3D_BA), len(match3D_BA), [0]
+        return len(match3D_BA), len(match3D_BA), np.asarray([])
  
     # move the load of larger model here to reduce time if merging is not possible
     sfm_dataA = FileUtils.loadjson(sfm_data_dirA)
@@ -554,25 +564,16 @@ def mergeModel(sfm_data_dirA, sfm_data_dirB, locFolderB, outfile, ransacK=1.0, m
     
     pointAn = np.asarray(pointA, dtype=np.float).T
     pointBn = np.asarray(pointB, dtype=np.float).T
-    
-    # calculate ransac threshold
-    # calculate as 4 times the median of distance between 
-    # 3D pt of A 
-    print "Find transformation with RANSAC"
-    # modified by T.Ishihara 2016.04.08
-    # median of camera positions merge too many points, use median of structure points instead
-    #ransacThres = findMedianThres(sfm_dataA, ransacK)
-    ransacThres = findMedianStructurePointsThres(sfm_dataA, ransacK)
-    mergePointThres = findMedianStructurePointsThres(sfm_dataA, mergePointK)
-
-    # TODO : replace with RANSAC similarity transform
+        
     # find robust transformation
+    print "Find transformation with RANSAC"
     ransacRound = len(match3D_BA)*ransacRoundMul
     print "Number of RANSAC round : " + str(ransacRound)
-    M, inliers = ransacAffineTransform(pointAn, pointBn, ransacThres, ransacRound, svdRatio)
+    M, inliers = ransacTransform(pointAn, pointBn, ransacThres, ransacRound, svdRatio)
+    
     # cannot find RANSAC transformation
-    if (len(inliers)==0):
-        return len(match3D_BA), len(match3D_BA), [0]
+    if (M.size==0):
+        return len(match3D_BA), len(match3D_BA), np.asarray([])
     print M
     
     # stop if not enough inliers
@@ -615,14 +616,11 @@ def mergeModel(sfm_data_dirA, sfm_data_dirB, locFolderB, outfile, ransacK=1.0, m
 # of merged camera location, then we say localization agrees with merged location.
 # The function returns the number of frames localized and number of frames 
 # in which each localized location agrees with merged location.
-def modelMergeCheckLocal(sfm_data_path, sfm_locOut, aDist=1.5):
+def modelMergeCheckLocal(sfm_data_path, sfm_locOut, medThres):
     
     # load sfm_data
     sfm_data = FileUtils.loadjson(sfm_data_path)
-    
-    # find threshold
-    medThres = findMedianThres(sfm_data,aDist)
-    
+        
     # collect all image names ad location
     imgName = []
     imgLoc = []
@@ -636,7 +634,7 @@ def modelMergeCheckLocal(sfm_data_path, sfm_locOut, aDist=1.5):
         imgLoc.append(locJsonDict["t"])
         
     imgID = imgnameToViewID(imgName, sfm_data)    
-    imgSfMLoc = get3DViewloc(sfm_data,imgID)
+    imgSfMLoc = get3DViewloc(sfm_data, imgID)
         
     # calculate distance and count agreement
     countFile = 0

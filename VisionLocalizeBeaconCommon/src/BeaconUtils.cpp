@@ -380,7 +380,6 @@ void hulo::getBeaconView(
 	cv::sort(distance,sortVal,CV_SORT_EVERY_ROW + CV_SORT_ASCENDING);
 
 	// generate and return list
-	// TODO select only view used in reconstruction
 	while (skipFrame*knn > rssi.rows) {
 		skipFrame--;
 		if (skipFrame==0) {

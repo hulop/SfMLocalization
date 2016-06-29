@@ -165,11 +165,18 @@ int main(int argc, char **argv) {
 		// 2. perform bundle adjustment
 		// Set bundle adjustment option, this option assumes you do not enable sparse matrix solver
 		// http://ceres-solver.org/faqs.html#solving
+#if (OPENMVG_VERSION_MAJOR<1)
 		Bundle_Adjustment_Ceres::BA_options options(true, true);
 		options._linear_solver_type = ceres::ITERATIVE_SCHUR;
 		options._preconditioner_type = ceres::SCHUR_JACOBI;
+#else
+		Bundle_Adjustment_Ceres::BA_Ceres_options options(true, true);
+		options.linear_solver_type_ = ceres::ITERATIVE_SCHUR;
+		options.preconditioner_type_ = ceres::SCHUR_JACOBI;
+#endif
 		Bundle_Adjustment_Ceres bundle_adjustment_obj(options);
 
+		// TODO : repeat bundle adjustment if lots of unstable points are found
 		// 2.1. solve for selected parameters (rotation, translation, intrinsic, structure)
 		for (vector<string>::const_iterator iterCommand = commandBD.begin();
 				iterCommand != commandBD.end(); ++iterCommand) {
@@ -195,8 +202,28 @@ int main(int argc, char **argv) {
 			}
 			cout << endl;
 
+#if (OPENMVG_VERSION_MAJOR<1)
 			bundle_adjustment_obj.Adjust(sfm_data, bdRot, bdTrn, bdInt, bdStr); // pose rotation, pose translation, intrinsic, structure
-
+#else
+			openMVG::sfm::Optimize_Options optimizeOptions(cameras::Intrinsic_Parameter_Type::NONE,
+					Extrinsic_Parameter_Type::NONE, Structure_Parameter_Type::NONE,
+					Control_Point_Parameter(0.0, false));
+			if (bdRot && bdTrn) {
+				optimizeOptions.extrinsics_opt = Extrinsic_Parameter_Type::ADJUST_ALL;
+			} else if (bdRot) {
+					optimizeOptions.extrinsics_opt = Extrinsic_Parameter_Type::ADJUST_ROTATION;
+			} else if (bdTrn) {
+					optimizeOptions.extrinsics_opt = Extrinsic_Parameter_Type::ADJUST_TRANSLATION;
+			}
+			if (bdInt) {
+				optimizeOptions.intrinsics_opt = cameras::Intrinsic_Parameter_Type::ADJUST_ALL;
+			}
+			if (bdStr) {
+				optimizeOptions.structure_opt = Structure_Parameter_Type::ADJUST_ALL;
+			}
+			bundle_adjustment_obj.Adjust(sfm_data, optimizeOptions);
+#endif
+			
 			if (bdCln) {
 				// cleanup structures
 				const size_t pointBeforeCleanup = sfm_data.structure.size();
@@ -214,7 +241,7 @@ int main(int argc, char **argv) {
 				cout << "Number of points after cleanup : " << pointAfterCleanup << endl;
 			}
 		}
-
+	} else {
 		// cleanup structures
 		const size_t pointBeforeCleanup = sfm_data.structure.size();
 		RemoveOutliers_PixelResidualError(sfm_data, STRUCTURE_CLEANUP_RESIDUAL_ERROR);

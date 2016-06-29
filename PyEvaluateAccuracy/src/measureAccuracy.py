@@ -190,8 +190,8 @@ def main():
             return
         
         # find tranformation
-        Amat, inliers = mergeSfM.ransacAffineTransform(np.array(worldCoor).T, np.array(locCoor).T, 
-                                                       reconstructParam.ransacThresTransformWorldCoordinateRefImage, ransacRound=1000)
+        Amat, inliers = mergeSfM.ransacTransform(np.array(worldCoor).T, np.array(locCoor).T, 
+                                                 reconstructParam.ransacThresTransformWorldCoordinateRefImage, ransacRound=1000)
         
         if len(inliers) < 4:
             print "Cannot estimate transformation matrix to world coordinate"
@@ -350,7 +350,7 @@ def main():
                 jsonLoc["t_relative"] = jsonLoc["t"]
                 jsonLoc["R_relative"] = jsonLoc["R"]
                 jsonLoc["t"] = np.dot(Amat,np.concatenate([jsonLoc["t"],[1]])).tolist()
-                jsonLoc["R"] = np.dot(Amat[:, 0:3],jsonLoc["R"]).tolist()
+                jsonLoc["R"] = np.dot(jsonLoc["R"],Amat[:, 0:3].T).tolist()
                 jsonLoc["groundtruth"] = mapNameLocTest[imgLocName]
                 locGlobalJsonObj["locGlobal"].append(jsonLoc)
                 

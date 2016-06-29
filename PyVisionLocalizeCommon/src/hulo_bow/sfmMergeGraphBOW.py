@@ -35,16 +35,26 @@ import hulo_sfm.sfmMergeGraph as sfmMergeGraph
 
 class sfmModelBOW(sfmMergeGraph.sfmModel):
     
-    def __init__(self, name, imgFolLoc, csvFolLoc, matchesFolLoc, locFolLoc, sfm_dataLoc):
-        sfmMergeGraph.sfmModel.__init__(self, name, imgFolLoc, csvFolLoc, matchesFolLoc, locFolLoc, sfm_dataLoc)        
+    def __init__(self, name, imgFolLoc, csvFolLoc, matchesFolLoc, locFolLoc, sfm_dataLoc, 
+                 validMergeRansacThres=-1, validMergeRansacThresK=-1, ransacStructureThres=-1, ransacStructureThresK=-1,
+                 mergeStructureThres=-1, mergeStructureThresK=-1):
+        sfmMergeGraph.sfmModel.__init__(self, name, imgFolLoc, csvFolLoc, matchesFolLoc, locFolLoc, sfm_dataLoc, 
+                                        validMergeRansacThres=validMergeRansacThres, validMergeRansacThresK=validMergeRansacThresK,
+                                        ransacStructureThres=ransacStructureThres, ransacStructureThresK=ransacStructureThresK,
+                                        mergeStructureThres=mergeStructureThres, mergeStructureThresK=mergeStructureThresK)        
 
 class sfmGraphBOW(sfmMergeGraph.sfmGraph):
     
     # receive a path
     # if path is Input folder, list all folders as project
     # if path is log file, load previous data
-    def __init__(self, inputPath, outputPath, mInputPath, mSfMPath, mMatchesPath, mCsvPath, mInputImgPath, workspacePath, minReconFrame=25):
-        sfmMergeGraph.sfmGraph.__init__(self, inputPath, outputPath, mInputPath, mSfMPath, mMatchesPath, mCsvPath, mInputImgPath, workspacePath, minReconFrame)
+    def __init__(self, inputPath, outputPath, mInputPath, mSfMPath, mMatchesPath, mCsvPath, mInputImgPath, 
+                 workspacePath, validMergeRansacThresK=5, ransacStructureThresK=10,
+                 mergeStructureThresK=0.01, minReconFrame=25):
+        sfmMergeGraph.sfmGraph.__init__(self, inputPath, outputPath, mInputPath, mSfMPath, mMatchesPath, mCsvPath, 
+                                        mInputImgPath, workspacePath, validMergeRansacThresK=validMergeRansacThresK,
+                                        ransacStructureThresK=ransacStructureThresK, mergeStructureThresK=mergeStructureThresK, 
+                                        minReconFrame=minReconFrame)
         
     # add model to merge graph
     # note that the ordering of the folders in input and 
@@ -58,7 +68,8 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
     #
     # Output
     # added : boolean whether the video is added
-    def addModel(self,videoName,inputPath,outputPath,minimumFrame):
+    def addModel(self,videoName,inputPath,outputPath,minimumFrame,
+                 validMergeRansacThresK,ransacStructureThresK,mergeStructureThresK):
         
         # check whether all folders and files exists
         if (not os.path.isdir(inputPath)) or \
@@ -85,7 +96,10 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
             os.path.join(inputPath,"csv"),
             os.path.join(outputPath,"matches"),
             os.path.join(outputPath,"loc"),
-            os.path.join(outputPath,"SfM","reconstruction","global","sfm_data.json"))
+            os.path.join(outputPath,"SfM","reconstruction","global","sfm_data.json"),
+            validMergeRansacThresK=validMergeRansacThresK,
+            ransacStructureThresK=ransacStructureThresK,
+            mergeStructureThresK=mergeStructureThresK)
 
         # check number of frame is above minimum
         if len(newModel.reconFrame) < minimumFrame:
@@ -127,9 +141,15 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
         
         sfmOutPath = os.path.join(self.mSfMPath,"global"+str(self.nMergedModel))
         
+        # modified by T. IShihara 2016.06.14
+        # fix file name too long issue
+        # 
         # create a temporary folder for reconstructed image of model2
-        inputImgTmpFolder = os.path.join(self.mSfMPath,"inputImgTmp","inputImgTmp"+model2.name)
-                
+        #inputImgTmpFolder = os.path.join(self.mSfMPath,"inputImgTmp","inputImgTmp"+model2.name)        
+        inputImgTmpFolder = os.path.join(self.mSfMPath,"inputImgTmp","inputImgTmpModel2")
+        if os.path.isdir(inputImgTmpFolder):
+            FileUtils.removedir(inputImgTmpFolder)
+        
         # copy reconstructed image fom model2 to tmp folder
         sfm_data2 = FileUtils.loadjson(model2.sfm_dataLoc)
         if not os.path.isdir(inputImgTmpFolder):
@@ -183,8 +203,8 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
                             model2.sfm_dataLoc,
                             model2.locFolLoc,
                             resultSfMDataFile,
-                            ransacK=reconParam.ransacStructureThresMul,
-                            mergePointK=reconParam.mergePointThresMul,
+                            ransacThres=model1.ransacStructureThres,
+                            mergePointThres=model1.mergeStructureThres,
                             ransacRoundMul=reconParam.ransacRoundMul,
                             inputImgDir=self.mInputImgPath,
                             minLimit=reconParam.min3DnInliers)
@@ -199,7 +219,7 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
         countFileLoc = 1
         if os.path.isfile(resultSfMDataFile):
             os.system(reconParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + resultSfMDataFile + " " + resultSfMDataFile)
-            countFileLoc, countFileAgree = mergeSfM.modelMergeCheckLocal(resultSfMDataFile, model2.locFolLoc, reconParam.vldMergeAgrFrameThresK)
+            countFileLoc, countFileAgree = mergeSfM.modelMergeCheckLocal(resultSfMDataFile, model2.locFolLoc, model1.validMergeRansacThres)
         else:
             sfm_merge_generated = False
         
@@ -269,11 +289,18 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
                  ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF):
         '''
         # update merge condition by T. Ishihara 2016.06.09
+        '''
         if not sfm_merge_generated or \
             not (countFileAgree > reconParam.vldMergeMinCountFileAgree and \
                  ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF and \
                  nInlierTmp > reconParam.min3DnInliers and \
                  ratioInlierMatchPoints > reconParam.vldMergeRatioInliersMatchPoints):
+        '''
+        # update merge condition by T. Ishihara 2016.06.20
+        if not sfm_merge_generated or \
+            not (countFileAgree > reconParam.vldMergeMinCountFileAgree and \
+                 ratioAgreeFrameLocFrame > reconParam.vldMergeRatioAgrFLocF and \
+                 nInlierTmp > reconParam.min3DnInliers):        
             print "Transformed locations do not agree with localization. Skip merge between " + model1.name + " and " + model2.name + "."
             
             '''
@@ -283,12 +310,18 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
             '''
                             
             # move to next video
-            return False, sfmModelBOW("","","","","","")
-                
+            return False, sfmModelBOW("","","","","","",validMergeRansacThres=0,validMergeRansacThresK=0,
+                                      ransacStructureThres=0, ransacStructureThresK=0, 
+                                      mergeStructureThres=0, mergeStructureThresK=0)
+        
         # generate colorized before bundle adjustment for comparison
         os.system("openMVG_main_ComputeSfM_DataColor " +
             " -i " + os.path.join(sfmOutPath,"sfm_data.json") +
             " -o " + os.path.join(sfmOutPath,"colorized_pre.ply"))        
+        
+        # TODO : try computing structure from know pose here
+        # https://github.com/openMVG/openMVG/issues/246
+        # http://openmvg.readthedocs.io/en/latest/software/SfM/ComputeStructureFromKnownPoses/
         
         # TODO : revisit the order of bundle adjustment
         # perform bundle adjustment
@@ -303,7 +336,11 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
             " -i " + os.path.join(sfmOutPath,"sfm_data.json") +
             " -o " + os.path.join(sfmOutPath,"colorized.ply"))
         
-        return True, sfmModelBOW("A" + model1.name + "," + model2.name +"Z", self.mInputImgPath, self.mCsvPath, self.mMatchesPath, os.path.join(sfmOutPath,"loc"), resultSfMDataFile)
+        return True, sfmModelBOW("A" + model1.name + "," + model2.name +"Z", self.mInputImgPath, self.mCsvPath, 
+                                 self.mMatchesPath, os.path.join(sfmOutPath,"loc"), resultSfMDataFile, 
+                                 validMergeRansacThres=model1.validMergeRansacThres,
+                                 ransacStructureThres=model1.ransacStructureThres, 
+                                 mergeStructureThres=model1.mergeStructureThres)
     
     # perform merging model
     # Input

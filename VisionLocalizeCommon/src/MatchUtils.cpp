@@ -243,7 +243,11 @@ void hulo::trackAKAZE(const SfM_Data &sfm_data, const string &sMatchesDir,
 		// set feature index that each feature in FRAME match to
 		for (IndMatches::const_iterator iterMatch = matches[make_pair(frame, frame + 1)].begin();
 				iterMatch != matches[Pair(frame, frame + 1)].end(); iterMatch++) {
+#if (OPENMVG_VERSION_MAJOR<1)
 			trackPointer.at(frame).at<int>(iterMatch->_i, 0) = static_cast<int>(iterMatch->_j);
+#else
+			trackPointer.at(frame).at<int>(iterMatch->i_, 0) = static_cast<int>(iterMatch->j_);
+#endif
 		}
 	}
 

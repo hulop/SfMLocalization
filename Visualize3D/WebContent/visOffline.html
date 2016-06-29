@@ -24,8 +24,10 @@
 		<script type="text/javascript" src="./three/js/Detector.js"></script>
 		<script type="text/javascript" src="./three/js/controls/TrackballControls.js"></script>
 		<script>
-		//var DATASET_NAME = 'toyosu-office';
-		var DATASET_NAME = 'thinklab-hakozaki-shrink-0.75';
+		/*
+		var DATASET_NAME = 'toyosu-office';
+		*/
+		var DATASET_NAME = 'nsh-4f-qolt-merge';
 		var SFM_STRUCTURE_PLY_FILE = './data/offline/' + DATASET_NAME + '/colorized_global_structure.ply';
 		var SFM_CAMERA_PLY_FILE = './data/offline/' + DATASET_NAME + '/colorized_global_camera.ply';
 		var LOCALIZE_JSON_FILE = './data/offline/' + DATASET_NAME + '/loc_global.json';
@@ -371,7 +373,6 @@
         	}
 			
         	function drawPyramid(parent, x, y, z, rotMat, color) {
-        		var FLIP_Z_ROTATE = true;
         		var size = 0.1;
         		        		
         		var points1 = [];
@@ -420,17 +421,11 @@
         		pyramid.add(lines2);
         		pyramid.add(lines3);
         		
-        		if (FLIP_Z_ROTATE) {
-	        		pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], -rotMat[0][1], -rotMat[0][2], x,
-            				-rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
-	            			-rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
-            				0, 0, 0, 1));
-        		} else {
-	        		pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[0][1], rotMat[0][2], x, 
-	        				rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
-	        				rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
-        					0, 0, 0, 1));
-        		}
+        		// apply Rt
+	        	pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[1][0], rotMat[2][0], x, 
+	        			rotMat[0][1], rotMat[1][1], rotMat[2][1], y,
+	        			rotMat[0][2], rotMat[1][2], rotMat[2][2], z,
+        				0, 0, 0, 1));
         		parent.add(pyramid);
         	}
 		});

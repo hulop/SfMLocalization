@@ -166,6 +166,8 @@ def main():
             countRecon = 1
             while not os.path.isfile(os.path.join(sfm_globalDir, "sfm_data.json")) and countRecon < reconstructParam.rerunRecon:  
                 os.system("openMVG_main_GlobalSfM -i " + os.path.join(sfm_matchesDir, "sfm_data.json") + " -m " + sfm_matchesDir + " -o " + sfm_globalDir)
+                # for OpenMVG 1.0
+                #os.system("openMVG_main_ConvertSfM_DataFormat -i " + os.path.join(sfm_globalDir, "sfm_data.bin") + " -o " + os.path.join(sfm_globalDir, "sfm_data.json"))
                 countRecon = countRecon + 1
                 time.sleep(1)
             
@@ -188,12 +190,20 @@ def main():
                 countCut = countCut + 1
                 os.rename(os.path.join(sfm_globalDir, "sfm_data_BC.json"),
                           os.path.join(sfm_globalDir, "sfm_data_BC" + str(countCut) + ".json"))
+                # modified by T. Ishihara 2016.06.14
+                # change bundle adjustment parameter for cutted model
+                '''                
                 os.system(reconstructParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + \
                           " " + os.path.join(sfm_globalDir, "sfm_data.json") + \
                           " " + os.path.join(sfm_globalDir, "sfm_data.json") + \
                           " -c=" + "rs,rst,rsti")
+                '''
+                os.system(reconstructParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + \
+                          " " + os.path.join(sfm_globalDir, "sfm_data.json") + \
+                          " " + os.path.join(sfm_globalDir, "sfm_data.json") + \
+                          " -c=" + "rst,rsti" + " -r=" + "1")
             os.system("openMVG_main_ComputeSfM_DataColor -i " + os.path.join(sfm_globalDir, "sfm_data.json") + " -o " + os.path.join(sfm_globalDir, "colorized_AC.ply"))
-         
+            
             # 5 - Clean sfm_data by removing viewID of frames that are not used
             # in reconstruction and put them in another folder and reconstruct them again
             # note that sfm_data.json in matches folder is renamed and kept as reference
@@ -277,7 +287,8 @@ def main():
                                           os.path.join(outputPath, "merge_result", "Input", "inputImg"),
                                           reconstructParam.WORKSPACE_DIR,
                                           USE_BOW,
-                                          reconstructParam.minReconFrameToAdd)
+                                          validMergeRansacThresK=reconstructParam.vldMergeAgrFrameThresK,                                          
+                                          minReconFrame=reconstructParam.minReconFrameToAdd)
     
     sfmGraph.mergeModel(os.path.join(inputPath, "listbeacon.txt"),
                         os.path.join(outputPath, listVideo[0], "matches", "image_describer.txt"),

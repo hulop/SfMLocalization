@@ -200,9 +200,14 @@ int main(int argc, char **argv) {
 		if (stlplus::file_exists(
 				stlplus::create_filespec(sMatchesDir,
 						"matches.putative.txt"))) {
-			PairedIndMatchImport(
-					stlplus::create_filespec(sMatchesDir,
-							"matches.putative.txt"), map_putativeMatches);
+
+#if (OPENMVG_VERSION_MAJOR<1)
+			PairedIndMatchImport(stlplus::create_filespec(sMatchesDir,"matches.putative.txt"),
+					map_putativeMatches);
+#else
+			openMVG::matching::Load(map_putativeMatches,
+					stlplus::create_filespec(sMatchesDir, "matches.putative.txt"));
+#endif
 		} else {
 			cerr << "Cannot read putative matches file "
 					<< stlplus::create_filespec(sMatchesDir,

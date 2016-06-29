@@ -222,6 +222,8 @@ def main():
     '''
     os.system(reconstructParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + resultSfMDataFile + " " + resultSfMDataFile)
     '''
+    os.system(reconstructParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + resultSfMDataFile + " " + resultSfMDataFile + \
+              " -c=" + "rst,rsti" + " -r=" + "1")
     
     Amat = AList[0]
     with open(os.path.join(output_dir,"Ref","Amat.txt"),"w") as AmatFile:

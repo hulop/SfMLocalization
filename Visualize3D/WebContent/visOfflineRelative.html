@@ -339,7 +339,6 @@
         	}
 			
         	function drawPyramid(parent, x, y, z, rotMat, color) {
-        		var FLIP_Z_ROTATE = true;
         		var size = 0.1;
         		        		
         		var points1 = [];
@@ -388,17 +387,11 @@
         		pyramid.add(lines2);
         		pyramid.add(lines3);
         		
-        		if (FLIP_Z_ROTATE) {
-	        		pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], -rotMat[0][1], -rotMat[0][2], x,
-            				-rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
-	            			-rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
-            				0, 0, 0, 1));
-        		} else {
-	        		pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[0][1], rotMat[0][2], x, 
-	        				rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
-	        				rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
-        					0, 0, 0, 1));
-        		}
+        		// apply Rt
+	        	pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[1][0], rotMat[2][0], x, 
+	        			rotMat[0][1], rotMat[1][1], rotMat[2][1], y,
+	        			rotMat[0][2], rotMat[1][2], rotMat[2][2], z,
+        				0, 0, 0, 1));
         		parent.add(pyramid);
         	}
 		});

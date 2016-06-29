@@ -504,7 +504,11 @@
 			        	    	locCameraPointsParent.remove(locCameraPointsParent.children[i]);
 			        	    }
 			        	    
-							//drawPyramid(locCameraPointsParent, result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
+			        	 	// visualize camera by pyramid
+			        	 	/*
+							drawPyramid(locCameraPointsParent, result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
+			        	 	*/
+							// visualize camera by avatar
 							if (!avatar) {
 					        	var color = 0xffff00; 
 								avatar = __create_avatar({
@@ -515,7 +519,6 @@
 								});
 							}
    							drawShape(locCameraPointsParent, avatar.clone(), result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
-							
 							
 			        		// draw keypoints
 			        		drawKeyPoints3D(keypoints3dParent, data["keypoints3D"], data["inlierKeypoints"]);
@@ -547,7 +550,6 @@
         	}
 			
         	function drawPyramid(parent, x, y, z, rotMat, color) {
-        		var FLIP_Z_ROTATE = true;
         		var size = 0.1;
         		        		
         		var points1 = [];
@@ -596,17 +598,11 @@
         		pyramid.add(lines2);
         		pyramid.add(lines3);
         		
-        		if (FLIP_Z_ROTATE) {
-	        		pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], -rotMat[0][1], -rotMat[0][2], x,
-            				-rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
-	            			-rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
-            				0, 0, 0, 1));
-        		} else {
-	        		pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[0][1], rotMat[0][2], x, 
-	        				rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
-	        				rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
-        					0, 0, 0, 1));
-        		}
+        		// apply Rt
+	        	pyramid.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[1][0], rotMat[2][0], x, 
+	        			rotMat[0][1], rotMat[1][1], rotMat[2][1], y,
+	        			rotMat[0][2], rotMat[1][2], rotMat[2][2], z,
+        				0, 0, 0, 1));
         		parent.add(pyramid);
         	}
         	
@@ -643,20 +639,13 @@
         	}
         	
         	function drawShape(parent, shape, x, y, z, rotMat, color) {
-        		var FLIP_Z_ROTATE = true;
         		var size = 0.3;
         		
-        		if (FLIP_Z_ROTATE) {
-	        		shape.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], -rotMat[0][1], -rotMat[0][2], x,
-            				-rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
-	            			-rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
-            				0, 0, 0, 1));
-        		} else {
-	        		shape.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[0][1], rotMat[0][2], x, 
-	        				rotMat[1][0], rotMat[1][1], rotMat[1][2], y,
-	        				rotMat[2][0], rotMat[2][1], rotMat[2][2], z,
-        					0, 0, 0, 1));
-        		}
+        		// apply Rt
+	        	shape.applyMatrix(new THREE.Matrix4().set(rotMat[0][0], rotMat[1][0], rotMat[2][0], x, 
+	        			rotMat[0][1], rotMat[1][1], rotMat[2][1], y,
+	        			rotMat[0][2], rotMat[1][2], rotMat[2][2], z,
+        				0, 0, 0, 1));
         		shape.scale.x = size;
         		shape.scale.y = size;
         		shape.scale.z = size;

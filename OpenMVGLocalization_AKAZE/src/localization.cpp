@@ -55,6 +55,10 @@ using namespace hulo;
 #define MINUM_NUMBER_OF_POINT_RESECTION 8
 #define MINUM_NUMBER_OF_INLIER_RESECTION 10
 
+/*
+ * TODO : add option of early stop for fast 3D model merge
+ * 		  i.e. stop localization process if localization fails more than given times
+ */
 const String keys =
 		"{h help 			|| print this message}"
 		"{@queryImage		||Query image file/folder}"
@@ -375,13 +379,15 @@ int main(int argc, char **argv) {
 		double endGMatch = (double) getTickCount();
 		cout << "number of geometric matches : " << map_geometricMatches.size() << endl;
 
-		shared_ptr<Matches_Provider> matches_provider = make_shared<
-				Matches_Provider>();
-		matches_provider->_pairWise_matches = map_geometricMatches;
-
 		// build list of tracks
-		cout << "Match provider size "
-				<< matches_provider->_pairWise_matches.size() << endl;
+		shared_ptr<Matches_Provider> matches_provider = make_shared<Matches_Provider>();
+#if (OPENMVG_VERSION_MAJOR<1)
+		matches_provider->_pairWise_matches = map_geometricMatches;
+		cout << "Match provider size " << matches_provider->_pairWise_matches.size() << endl;
+#else
+		matches_provider->pairWise_matches_ = map_geometricMatches;
+		cout << "Match provider size " << matches_provider->pairWise_matches_.size() << endl;
+#endif
 
 		// intersect tracks from query image to reconstructed 3D
 		// any 2D pts that have been matched to more than one 3D point will be removed

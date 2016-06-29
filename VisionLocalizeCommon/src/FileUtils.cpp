@@ -105,15 +105,17 @@ void hulo::readAKAZEBin(std::string filename, cv::Mat& mat) {
 void hulo::exportPairWiseMatches(
 		openMVG::matching::PairWiseMatches &map_geometricMatches,
 		std::string filename) {
-	// write to file
+#if (OPENMVG_VERSION_MAJOR<1)
 	std::ofstream fileOut(filename);
 	if (fileOut.is_open()) {
 		PairedIndMatchToStream(map_geometricMatches, fileOut);
 	} else {
-		std::cerr << "Cannot write geometric matches file" << filename
-				<< std::endl;
+		std::cerr << "Cannot write geometric matches file" << filename << std::endl;
 	}
 	fileOut.close();
+#else
+	openMVG::matching::Save(map_geometricMatches, filename);
+#endif
 }
 
 // export match file
