@@ -2,7 +2,7 @@
 
 Pre-Requisites
 ----
-- [OpenMVG 0.9](https://github.com/openMVG/openMVG/)  (MPL License)
+- [OpenMVG 1.1](https://github.com/openMVG/openMVG/)  (MPL License)
 - [OpenCV 3.0](http://opencv.org/)  (BSD License)
 - [STLplus 3.8](http://stlplus.sourceforge.net/)  (BSD License)
 - [cereal 1.1.1](http://uscilab.github.io/cereal/)  (BSD License)
@@ -11,6 +11,7 @@ Pre-Requisites
 - [NumPy 1.8.2](http://www.numpy.org/)  (BSD License)
 - [SciPy 0.15.1](http://www.scipy.org/) (BSD License)
 - [matplotlib 1.4.3](http://matplotlib.org/)  (Python License 2)
+- [transformations.py version 2015.07.18](http://www.lfd.uci.edu/~gohlke/code/transformations.py)  (BSD license)
 
 Additional Pre-Requisites for Server Side Localization
 ----
