@@ -93,6 +93,11 @@ exports.estimateGet = function(req, res) {
     if (req.query.returnKeypoint) {
     	returnKeypoint = (req.query.returnKeypoint == 'true');
     }
+	// check return time parameter
+	var returnTime = false;
+    if (req.query.returnTime) {
+    	returnTime = (req.query.returnTime == 'true');
+    }
     
     async.waterfall([ function(callback) {
         var requestSettings = {
@@ -113,25 +118,25 @@ exports.estimateGet = function(req, res) {
         if (req.query.beacon) {
 	        if (req.query.cx && req.query.cy && req.query.cz && req.query.radius) {
 	        	result = localizeImage.localizeImageBufferBeacon(req.query.user, kMatFile, distMatFile, scaleImage,
-	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, image, req.query.beacon,
+	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, returnTime, image, req.query.beacon,
 	        			[req.query.cx, req.query.cy, req.query.cz], req.query.radius);
 	        } else {
 	        	result = localizeImage.localizeImageBufferBeacon(req.query.user, kMatFile, distMatFile, scaleImage,
-	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, image, req.query.beacon);
+	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, returnTime, image, req.query.beacon);
 	        }
         } else {
 	        if (req.query.cx && req.query.cy && req.query.cz && req.query.radius) {
 	        	result = localizeImage.localizeImageBuffer(req.query.user, kMatFile, distMatFile, scaleImage,
-	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, image, 
+	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, returnTime, image, 
 	        			[req.query.cx, req.query.cy, req.query.cz], req.query.radius);
 	        } else {
 	        	result = localizeImage.localizeImageBuffer(req.query.user, kMatFile, distMatFile, scaleImage,
-	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, image);
+	        			req.query.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, returnTime, image);
 	        }
         }
         
         var jsonObj;
-        if (result && result.length==4) {
+        if (result && result.length==5) {
         	console.log('localization successed.');
         	
         	console.log('estimate : ' + result[0]);
@@ -145,6 +150,11 @@ exports.estimateGet = function(req, res) {
         		jsonObj['keypoints2D'] = result[1];
         		jsonObj['keypoints3D'] = result[2];
         		jsonObj['inlierKeypoints'] = result[3];
+        	}
+        	if (returnTime) {
+            	console.log('times : ' + result[4]);
+            	
+        		jsonObj['times'] = result[4];
         	}
         	
             // update users' history
@@ -226,6 +236,11 @@ exports.estimatePost = function(req, res) {
     if (req.body.returnKeypoint) {
     	returnKeypoint = (req.body.returnKeypoint == 'true');
     }
+	// check return time parameter
+	var returnTime = false;
+    if (req.body.returnTime) {
+    	returnTime = (req.body.returnTime == 'true');
+    }
     
     async.waterfall([ function(callback) {
         fs.readFile(req.files.image.path, function (err, data) {
@@ -239,25 +254,25 @@ exports.estimatePost = function(req, res) {
                 if (req.body.beacon) {
                     if (req.body.cx && req.body.cy && req.body.cz && req.body.radius) {
                         result = localizeImage.localizeImageBufferBeacon(req.body.user, kMatFile, distMatFile, scaleImage,
-                        		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint,
+                        		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, returnTime,
                         		data, req.body.beacon, [req.body.cx, req.body.cy, req.body.cz], req.body.radius);
                     } else {
                         result = localizeImage.localizeImageBufferBeacon(req.body.user, kMatFile, distMatFile, scaleImage,
-                        		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, data, req.body.beacon);
+                        		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, returnTime, data, req.body.beacon);
                     }
                 } else {
 	                if (req.body.cx && req.body.cy && req.body.cz && req.body.radius) {
 	                    result = localizeImage.localizeImageBuffer(req.body.user, kMatFile, distMatFile, scaleImage,
-	                    		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint,
+	                    		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, returnTime,
 	                    		data, [req.body.cx, req.body.cy, req.body.cz], req.body.radius);
 	                } else {
 	                    result = localizeImage.localizeImageBuffer(req.body.user, kMatFile, distMatFile, scaleImage,
-	                    		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, data);
+	                    		req.body.map, sfmDataDir, matchDir, aMatFile, returnKeypoint, returnTime, data);
 	                }
                 }
                                 
                 var jsonObj;
-                if (result && result.length==4) {
+                if (result && result.length==5) {
                 	console.log('localization successed.');
                 	
                 	console.log('estimate : ' + result[0]);
@@ -270,6 +285,25 @@ exports.estimatePost = function(req, res) {
                 		jsonObj['keypoints2D'] = result[1];
                 		jsonObj['keypoints3D'] = result[2];
                 		jsonObj['inlierKeypoints'] = result[3];
+                	}
+                	if (returnTime && result[4].length==7) {
+                		console.log('time selectBeacon : ' + result[4][0]);
+                		console.log('time selectBow : ' + result[4][1]);
+                		console.log('time extFeat : ' + result[4][2]);
+                		console.log('time putMatch : ' + result[4][3]);
+                		console.log('time geoMatch : ' + result[4][4]);
+                		console.log('time PnP : ' + result[4][5]);
+                		console.log('time others : ' + result[4][6]);
+                    	
+                		jsonObj['times'] = {
+                				'selectBeacon':result[4][0],
+                				'selectBow':result[4][1],
+                				'extFeat':result[4][2],
+                				'putMatch':result[4][3],
+                				'geoMatch':result[4][4],
+                				'PnP':result[4][5],
+                				'others':result[4][6]
+                		};
                 	}
                 	
                     // update users' history

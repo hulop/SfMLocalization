@@ -26,6 +26,7 @@
 #include <Eigen/Core>
 #include <sfm/sfm_data.hpp>
 #include <sfm/sfm_data_io.hpp>
+#include <openMVG/version.hpp>
 #include <openMVG/features/regions.hpp>
 #include <openMVG/sfm/pipelines/sfm_robust_model_estimation.hpp>
 #include <openMVG/sfm/pipelines/sfm_matches_provider.hpp>
@@ -36,6 +37,7 @@
 #include "DenseLocalFeatureWrapper.h"
 #include "PcaWrapper.h"
 #include "BoFSpatialPyramids.h"
+#include "HuloSfMRegionsProvider.h"
 
 class LocalizeEngine {
 private:
@@ -46,7 +48,7 @@ private:
 	double mRansacPrecision;
 	bool mGuidedMatching;
 	openMVG::sfm::SfM_Data mSfmData;
-	std::shared_ptr<openMVG::sfm::Regions_Provider> mRegionsProvider;
+	std::shared_ptr<hulo::HuloSfMRegionsProvider> mRegionsProvider;
 	hulo::MapViewFeatTo3D mMapViewFeatTo3D;
 	cv::Mat mA;
 
@@ -76,5 +78,6 @@ public:
 
 	std::vector<double> localize(const cv::Mat& image, const std::string workingDir, const std::string& beaconStr,
 			const bool bReturnKeypoints, cv::Mat& points2D, cv::Mat& points3D, std::vector<int>& pointsInlier,
+			bool bReturnTime, std::vector<double>& times,
 			const std::vector<double>& center=std::vector<double>(), double radius=-1.0);
 };

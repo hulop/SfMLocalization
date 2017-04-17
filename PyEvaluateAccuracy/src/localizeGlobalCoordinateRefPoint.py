@@ -29,6 +29,7 @@ import json
 import numpy as np
 from scipy.spatial import cKDTree
 import shutil
+import glob
 import hulo_file.FileUtils as FileUtils
 import hulo_file.PlyUtils as PlyUtis
 import hulo_file.SfmDataUtils as SfmDataUtils
@@ -236,6 +237,12 @@ def main():
     
     # start localize test
     if test_project_dir:
+        countFrameTotal = 0
+        countLocFrameTotal = 0
+        log_txt_filename = os.path.join(test_project_dir,"log.txt")
+        if os.path.exists(log_txt_filename):
+            os.remove(log_txt_filename)
+        
         for testFolder in sorted(os.listdir(test_project_dir)):
             TEST_DIR = os.path.join(test_project_dir,testFolder)
             
@@ -250,6 +257,9 @@ def main():
                     shutil.rmtree(TEST_FOLDER_LOC)
                 os.mkdir(TEST_FOLDER_LOC)
                 
+                guideMatchOption = ""
+                if reconstructParam.bGuidedMatchingLocalize:
+                    guideMatchOption = " -gm"                
                 if USE_BOW and not USE_BEACON:
                     os.system(reconstructParam.LOCALIZE_PROJECT_PATH + \
                               " " + os.path.join(TEST_DIR,"inputImg") + \
@@ -260,7 +270,8 @@ def main():
                               " -r=" + str(localizeParam.locRansacRound) + \
                               " -k=" + str(localizeBOWParam.locKNNnum) + \
                               " -a=" + BOW_FILE + \
-                              " -p=" + PCA_FILE)
+                              " -p=" + PCA_FILE + \
+                              guideMatchOption)
                 elif not USE_BOW and USE_BEACON:
                     os.system(reconstructIBeaconParam.LOCALIZE_PROJECT_PATH + \
                               " " + os.path.join(TEST_DIR,"inputImg") + \
@@ -274,7 +285,8 @@ def main():
                               " -k=" + str(localizeIBeaconParam.locKNNnum) + \
                               " -c=" + str(localizeIBeaconParam.coocThres) + \
                               " -v=" + str(localizeIBeaconParam.locSkipSelKNN) + \
-                              " -n=" + str(localizeIBeaconParam.normApproach))                
+                              " -n=" + str(localizeIBeaconParam.normApproach) + \
+                              guideMatchOption)                
                 elif USE_BOW and USE_BEACON:
                     os.system(reconstructIBeaconParam.LOCALIZE_PROJECT_PATH + \
                               " " + os.path.join(TEST_DIR,"inputImg") + \
@@ -291,7 +303,8 @@ def main():
                               " -n=" + str(localizeIBeaconParam.normApproach) + \
                               " -kb=" + str(localizeBOWParam.locKNNnum) + \
                               " -a=" + BOW_FILE + \
-                              " -p=" + PCA_FILE)
+                              " -p=" + PCA_FILE + \
+                              guideMatchOption)
                 else:
                     os.system(reconstructParam.LOCALIZE_PROJECT_PATH + \
                               " " + os.path.join(TEST_DIR,"inputImg") + \
@@ -299,12 +312,12 @@ def main():
                               " " + matches_dir + \
                               " " + TEST_FOLDER_LOC + \
                               " -f=" + str(localizeParam.locFeatDistRatio) + \
-                              " -r=" + str(localizeParam.locRansacRound))
+                              " -r=" + str(localizeParam.locRansacRound) + \
+                              guideMatchOption)
                 
                 # extract centers from all json file and write to a file
-                fileLoc = open(os.path.join(TEST_FOLDER_LOC,"center.txt"),"w")
                 countLocFrame = 0
-                
+                fileLoc = open(os.path.join(TEST_FOLDER_LOC,"center.txt"),"w")
                 for filename in sorted(os.listdir(TEST_FOLDER_LOC)):
                     if filename[-4:]!="json":
                         continue
@@ -315,8 +328,22 @@ def main():
                         locJsonDict = json.load(locJson)
                         loc = locJsonDict["t"]
                         fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )
-                
                 fileLoc.close()
+                
+                # count input images
+                imageTypes = ("*.jpg", "*.JPG", "*.jpeg", "*.JPEG", "*.png", "*.PNG")
+                imageFiles = []
+                for imageType in imageTypes:
+                    imageFiles.extend(glob.glob(os.path.join(TEST_DIR,"inputImg", imageType)))
+                countFrame = len(imageFiles)
+                
+                # write log file
+                with open(log_txt_filename, "a") as logfile:
+                    logfile.write("result for : " + TEST_DIR + "\n")
+                    logfile.write("number of localized frame : " + str(countLocFrame) + "/" + str(countFrame) + "\n")
+                    logfile.write("ratio of localized frame : " + str(float(countLocFrame)/countFrame) + "\n")                
+                countFrameTotal += countFrame
+                countLocFrameTotal += countLocFrame
             
             # convert all localization results to world coordinate and merge to one json file
             locGlobalJsonObj = {}
@@ -341,6 +368,12 @@ def main():
             # save localization results to ply file
             PlyUtis.addPointToPly(os.path.join(sfm_data_dir,"colorized_global_structure.ply"), locGlobalPoints, 
                                   os.path.join(TEST_FOLDER_LOC,"colorized_global_localize.ply"))
+
+        # write log file
+        with open(log_txt_filename, "a") as logfile:
+            logfile.write("total result" + "\n")
+            logfile.write("number of localized frame : " + str(countLocFrameTotal) + "/" + str(countFrameTotal) + "\n")
+            logfile.write("ratio of localized frame : " + str(float(countLocFrameTotal)/countFrameTotal) + "\n")
 
 if __name__ == '__main__':
     main()

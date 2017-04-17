@@ -25,6 +25,7 @@
 #include <uuid/uuid.h>
 #include <omp.h>
 
+#include <openMVG/version.hpp>
 #include <openMVG/features/regions.hpp>
 #include <openMVG/features/regions_factory.hpp>
 #include <openMVG/sfm/pipelines/sfm_robust_model_estimation.hpp>
@@ -64,8 +65,14 @@ namespace {
 	int MINUM_NUMBER_OF_INLIER_RESECTION = 10;
 
 	int THRESHOLD_CALC_BEACON_COOCCURRENCE = 10;
-	int MINUM_NUMBER_OF_SAME_BEACONS = 2;
-	double BEACON_COOCCURRENCE = 0.5;
+	// setting for version 0.2
+	//int MINUM_NUMBER_OF_SAME_BEACONS = 2;
+	// setting for WACV 2017
+	int MINUM_NUMBER_OF_SAME_BEACONS = 1;
+	// setting for version 0.2
+	//double BEACON_COOCCURRENCE = 0.5;
+	// setting for WACV 2017
+	double BEACON_COOCCURRENCE = 0.4;
 	int BEACON_SKIP_FRAME = 1;
 	NormBeaconSignalType NORMALIZE_BEACON_TYPE = NormBeaconSignalType::MEDIAN;
 }
@@ -94,7 +101,7 @@ LocalizeEngine::LocalizeEngine(const std::string sfmDataDir, const std::string m
 	// construct feature providers for geometric matches
 	unique_ptr<Regions> regions;
 	regions.reset(new AKAZE_Binary_Regions);
-	mRegionsProvider = make_shared<Regions_Provider>();
+	mRegionsProvider = make_shared<HuloSfMRegionsProvider>();
 	if (!mRegionsProvider->load(mSfmData, mMatchDir, regions)) {
 		cerr << "Cannot construct regions providers" << endl;
 	}
@@ -165,9 +172,13 @@ LocalizeEngine::LocalizeEngine(const std::string sfmDataDir, const std::string m
 				cout << "loaded PCA model." << endl;
 			}
 		} else {
+			mUseBow = false;
+			mBowKnnNum = 0;
 			cout << "KNN number for BOW model is not set, localize without using BOW model" << endl;
 		}
 	} else {
+		mUseBow = false;
+		mBowKnnNum = 0;
 		cout << "cannot find BOW model, localize without using BOW model" << endl;
 	}
 	// if beacon signal for SfM model exists, load beacon signal for all views
@@ -191,8 +202,8 @@ std::unique_ptr<openMVG::features::Regions> LocalizeEngine::extractAKAZESingleIm
 		std::vector<std::pair<float, float>> &locFeat) {
 	double startAKAZE = (double) getTickCount();
 
-	Ptr<AKAZE> akaze = AKAZE::create(
-			AKAZE::DESCRIPTOR_MLDB, 0, akazeOption.desc_ch, akazeOption.thres,
+	Ptr<cv::AKAZE> akaze = cv::AKAZE::create(
+			cv::AKAZE::DESCRIPTOR_MLDB, 0, akazeOption.desc_ch, akazeOption.thres,
 			akazeOption.nOct, akazeOption.nOctLay);
 	double initAKAZE = (double) getTickCount();
 
@@ -276,6 +287,7 @@ void LocalizeEngine::getLocalViews(openMVG::sfm::SfM_Data &sfm_data, const cv::M
 
 std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::string workingDir, const std::string& beaconStr,
 		bool bReturnKeypoints, cv::Mat& points2D, cv::Mat& points3D, std::vector<int>& pointsInlier,
+		bool bReturnTime, std::vector<double>& times,
 		const std::vector<double>& center, double radius)
 {
 	vector<double> result;
@@ -316,23 +328,35 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 	}
 	double selectViewsByBeacon = (double) getTickCount();
 
-	if (mUseBow && mBowKnnNum>0 && localViews.size() > mBowKnnNum) {
-		std::vector<cv::KeyPoint> keypoints;
-		cv::Mat descriptors = mDenseLocalFeatureWrapper->calcDenseLocalFeature(image, keypoints);
-
-		cv::Mat bofMat;
-		if (mUseBowPca) {
-			cv::Mat pcaDescriptors = mPcaWrapper->calcPcaProject(descriptors);
-			bofMat = mBofPyramids->calcBoF(pcaDescriptors, keypoints);
-		} else {
-			bofMat = mBofPyramids->calcBoF(descriptors, keypoints);
+	if (mUseBow && mBowKnnNum>0) {
+		if (localViews.size()==0) {
+			for (Views::const_iterator iter = mSfmData.views.begin(); iter != mSfmData.views.end(); iter++) {
+				if (mSfmData.poses.find(iter->second->id_pose) != mSfmData.poses.end()) {
+					localViews.insert(iter->first);
+				}
+			}
 		}
 
-		set<openMVG::IndexT> bofSelectedViews;
-		hulo::selectViewByBoF(bofMat, mMatchDir, localViews, mSfmData, mBowKnnNum, bofSelectedViews);
-		localViews.clear();
-		localViews = set<openMVG::IndexT>(bofSelectedViews);
-		cout << "number of selected local views by bow : " << localViews.size() << endl;
+		if(localViews.size() > mBowKnnNum) {
+			std::vector<cv::KeyPoint> keypoints;
+			cv::Mat descriptors = mDenseLocalFeatureWrapper->calcDenseLocalFeature(image, keypoints);
+
+			cv::Mat bofMat;
+			if (mUseBowPca) {
+				cv::Mat pcaDescriptors = mPcaWrapper->calcPcaProject(descriptors);
+				bofMat = mBofPyramids->calcBoF(pcaDescriptors, keypoints);
+			} else {
+				bofMat = mBofPyramids->calcBoF(descriptors, keypoints);
+			}
+
+			set<openMVG::IndexT> bofSelectedViews;
+			hulo::selectViewByBoF(bofMat, mMatchDir, localViews, mSfmData, mBowKnnNum, bofSelectedViews);
+			localViews.clear();
+			localViews = set<openMVG::IndexT>(bofSelectedViews);
+			cout << "number of selected local views by bow : " << localViews.size() << endl;
+		} else {
+			cout << "skip selecting local views by bow" << endl;
+		}
 	}
 	double selectViewsByBow = (double) getTickCount();
 
@@ -372,7 +396,7 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 	IndexT indQueryFile = mSfmData.views.rbegin()->second->id_view + 1; // set index of query file to (id of last view of sfm data) + 1
 	cout << "query image size : " << imageWidth << " x " << imageHeight << endl;
 	mSfmData.views.insert(make_pair(indQueryFile, make_shared<View>(imageID, indQueryFile, 0, 0, imageWidth, imageHeight)));
-	mRegionsProvider->regions_per_view[indQueryFile] = std::move(queryRegions);
+	mRegionsProvider->set(indQueryFile, queryRegions);
 	cout << "query image index : " << indQueryFile << endl;
 	cout << "query image path : " << mSfmData.views.at(indQueryFile)->s_Img_path << endl;
 
@@ -416,7 +440,7 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 
 		// remove added image from sfm_data
 		mSfmData.views.erase(indQueryFile);
-		mRegionsProvider->regions_per_view.erase(indQueryFile);
+		mRegionsProvider->erase(indQueryFile);
 
 		cout << "Load SfM views : " << (loadSfmViews - startQuery) / getTickFrequency() << " s\n";
 		cout << "Select views by iBeacon : " << (selectViewsByBeacon - loadSfmViews) / getTickFrequency() << " s\n";
@@ -443,7 +467,7 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 
 		// remove added image from sfm_data
 		mSfmData.views.erase(indQueryFile);
-		mRegionsProvider->regions_per_view.erase(indQueryFile);
+		mRegionsProvider->erase(indQueryFile);
 
 		cout << "Load SfM views : " << (loadSfmViews - startQuery) / getTickFrequency() << " s\n";
 		cout << "Select views by iBeacon : " << (selectViewsByBeacon - loadSfmViews) / getTickFrequency() << " s\n";
@@ -538,7 +562,7 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 
 		// remove added image from sfm_data
 		mSfmData.views.erase(indQueryFile);
-		mRegionsProvider->regions_per_view.erase(indQueryFile);
+		mRegionsProvider->erase(indQueryFile);
 
 		cout << "#inliers = " << resection_data.vec_inliers.size() << endl;
 
@@ -601,7 +625,7 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 
 	// remove added image from sfm_data
 	mSfmData.views.erase(indQueryFile);
-	mRegionsProvider->regions_per_view.erase(indQueryFile);
+	mRegionsProvider->erase(indQueryFile);
 
 	double endQuery = (double) getTickCount();
 	cout << "Load SfM views : " << (loadSfmViews - startQuery) / getTickFrequency() << " s\n";
@@ -615,8 +639,23 @@ std::vector<double> LocalizeEngine::localize(const cv::Mat& image, const std::st
 	cout << "PnP : " << (endResection - endGMatch) / getTickFrequency() << " s\n";
 	cout << "Transform coordinate : " << (endQuery - endResection) / getTickFrequency() << " s\n";
 	cout << "Total time: " << (endQuery - startQuery) / getTickFrequency() << " s\n";
-
 	cout << "complete!" << endl;
+	if (bReturnTime) {
+		double timeSelectViewsBeacon = (selectViewsByBeacon - loadSfmViews) / getTickFrequency();
+		double timeSelectViewsBow = (selectViewsByBow - selectViewsByBeacon) / getTickFrequency();
+		double timeExtractFeature = (endFeat - generateUUID) / getTickFrequency();
+		double timePutativeMatching = (endMatch - endFeat) / getTickFrequency();
+		double timeGeometricMatching = (endGMatch - endMatch) / getTickFrequency();
+		double timePnP = (endResection - endGMatch) / getTickFrequency();
+
+		times.clear();
+		times.push_back(timeSelectViewsBeacon); // select views beacon
+		times.push_back(timeSelectViewsBow); // select views bow
+		times.push_back(timeExtractFeature); // extract feature
+		times.push_back(timePutativeMatching); // putative matching
+		times.push_back(timeGeometricMatching); // geometric matching
+		times.push_back(timePnP); // PnP
+	}
 
 	return result;
 }

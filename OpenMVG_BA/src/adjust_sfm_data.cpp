@@ -21,6 +21,7 @@
 *******************************************************************************/
 
 #include <opencv2/opencv.hpp>
+#include <openMVG/version.hpp>
 #include <openMVG/sfm/sfm_data.hpp>
 #include <openMVG/sfm/sfm_data_io.hpp>
 #include <openMVG/sfm/pipelines/localization/SfM_Localizer.hpp>

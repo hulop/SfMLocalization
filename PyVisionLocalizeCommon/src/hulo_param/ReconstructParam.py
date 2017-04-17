@@ -59,9 +59,17 @@ class ReconstructParam:
     # ExtFeatAndMatch option -a
     minMatchToRetain = 30
     
+    # TODO : set larger ratio value and co-visibility samplging (Li et. al, ECCV 2012)
+    # https://sites.google.com/site/lsvpr2015/home
+    # http://landmark.cs.cornell.edu/docs/global_pose.pdf
+    #
     # Lowe's ratio for feature matching after feature extraction for reconstruction
     # ExtFeatAndMatch option -f
     extFeatDistRatio = 0.7
+    
+    # option to use guided matching
+    bGuidedMatching = True
+    bGuidedMatchingLocalize = False
     
     # Number of RANSAC round for geometric matching after feature extraction for reconstruction
     # ExtFeatAndMatch option -r

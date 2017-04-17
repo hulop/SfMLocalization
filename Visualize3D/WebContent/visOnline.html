@@ -25,23 +25,18 @@
 		<script type="text/javascript" src="./three/js/controls/TrackballControls.js"></script>
 		<script>
 		/*
-		var DATASET_NAME = 'thinklab-hakozaki-shrink-0.75';
-		var USER_NAME = '1-shrink-0.75';
-		var MAP_NAME = 'thinklab-hakozaki-shrink-0.75';
-		*/
 		var DATASET_NAME = 'cebit-thinklab-shrink-0.75';
 		var USER_NAME = '1-shrink-0.75';
 		var MAP_NAME = 'cebit-thinklab-shrink-0.75';
-		/*
-		var DATASET_NAME = 'shelf-office';
-		var USER_NAME = '1-cmu-shrink-0.75';
-		var MAP_NAME = 'shelf-office';
 		*/
 		/*
-		var DATASET_NAME = 'uc-peanut';
-		var USER_NAME = '1-cmu-shrink-0.75';
-		var MAP_NAME = 'uc-peanut';
+		var DATASET_NAME = 'cebit-isl-shrink-0.75';
+		var USER_NAME = '1-shrink-0.75';
+		var MAP_NAME = 'cebit-isl-shrink-0.75';
 		*/
+		var DATASET_NAME = 'cebit-isl-shrink-0.75-test';
+		var USER_NAME = '1-shrink-0.75';
+		var MAP_NAME = 'cebit-isl-shrink-0.75-test';
 		
 		var SFM_STRUCTURE_PLY_FILE = './data/online/' + DATASET_NAME + '/colorized_global_structure.ply';
 		var SFM_CAMERA_PLY_FILE = './data/online/' + DATASET_NAME + '/colorized_global_camera.ply';
@@ -58,6 +53,9 @@
 		var RUNNING_LOCALIZE = false;
 		var PREVIOUS_ESTIMATE = null;
 		var RADIUS_RISTRICT = 5;
+		
+		var FIX_CAMERA_VERTICAL = false;
+		var FIX_CAMERA_HORIZONTAL = false;
 		
 		$(document).ready(function(){
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -166,6 +164,34 @@
 					USE_RADIUS_RISTRICT = $(this).is(":checked");
 				});				
 				
+				$("<span/>",{
+					"class":"checkbox_label"
+				}).html("Fix Camera Vertical")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:FIX_CAMERA_VERTICAL,
+					name:"fixCameraVertical",
+					value:"fixCameraVertical"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					FIX_CAMERA_VERTICAL = $(this).is(":checked");
+				});				
+
+				$("<span/>",{
+					"class":"checkbox_label"
+				}).html("Fix Camera Horizontal")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:FIX_CAMERA_HORIZONTAL,
+					name:"fixCameraHorizontal",
+					value:"fixCameraHorizontal"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					FIX_CAMERA_HORIZONTAL = $(this).is(":checked");
+				});				
+
 				$("<input/>",{
 					type:"button",
 					id:"startloc",
@@ -348,6 +374,14 @@
 				offlineEstimateCameraParent.visible = SHOW_OFFLINE_ESTIMATE_CAMERA ? true : false;
 				keypoints3dParent.visible = SHOW_KEYPOINTS ? true : false;
 				
+				if (FIX_CAMERA_VERTICAL) {
+					camera.rotation.x = 0;
+					camera.rotation.y = 0;
+				}
+				if (FIX_CAMERA_HORIZONTAL) {
+					camera.rotation.z = 0;
+				}
+				
 				renderer.clear();
 			    renderer.render( scene, camera );
 				renderer.render( scene2d, camera2d );
@@ -518,11 +552,13 @@
 									camoffs: new THREE.Vector3(0,0,1.5)
 								});
 							}
-   							drawShape(locCameraPointsParent, avatar.clone(), result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
+			        	 	if (result["t"].length==3 && result["R"].length==3) {
+	   							drawShape(locCameraPointsParent, avatar.clone(), result["t"][0], result["t"][1], result["t"][2], result["R"], 0xFF0000);
 							
-			        		// draw keypoints
-			        		drawKeyPoints3D(keypoints3dParent, data["keypoints3D"], data["inlierKeypoints"]);
-							
+				        		// draw keypoints
+			        			drawKeyPoints3D(keypoints3dParent, data["keypoints3D"], data["inlierKeypoints"]);
+			        	 	}
+			        	 	
 							PREVIOUS_ESTIMATE = result["t"];
 														
 							RUNNING_LOCALIZE = false;

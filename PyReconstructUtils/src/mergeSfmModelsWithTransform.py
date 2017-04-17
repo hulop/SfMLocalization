@@ -42,6 +42,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 import hulo_param.ReconstructParam as ReconstructParam
 import hulo_sfm.mergeSfM as mergeSfM
+import hulo_ibeacon.ReconstructIBeaconParam as ReconstructIBeaconParam
 import hulo_ibeacon.IBeaconUtils as iBeaconUtils
 
 #FILE_COPY_OPTION = "-s" # copy as link
@@ -59,9 +60,10 @@ def copyOriginalFiles(inputDir, outputDir):
     
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Input","*","inputImg","*") + " " + os.path.join(outputDir,"Input","inputImg"))
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Input","*","csv","*") + " " + os.path.join(outputDir,"Input","csv"))
+    os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Input","listbeacon.txt") + " " + os.path.join(outputDir,"Input"))
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","*","matches","*.desc") + " " + os.path.join(outputDir,"Output","matches"))
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","*","matches","*.feat") + " " + os.path.join(outputDir,"Output","matches"))
-    os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","final","Output","matches","image_describer.txt") + " " + os.path.join(outputDir,"Output","matches"))    
+    os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","final","Output","matches","image_describer.txt") + " " + os.path.join(outputDir,"Output","matches"))
 
 #
 # find inliers when transforming model B to model A
@@ -102,6 +104,7 @@ def main():
         
     # load reconstruct parameters
     reconstructParam = ReconstructParam.ReconstructParam
+    reconstructIBeaconParam = ReconstructIBeaconParam.ReconstructIBeaconParam
     
     # read projects list
     projectList = []
@@ -118,6 +121,22 @@ def main():
     for project in projectList:
         copyOriginalFiles(project["dir"], output_dir)
     
+    # load beacon settings
+    mergeBeaconmap = None
+    for project in projectList:
+        beacon_file = os.path.join(project["dir"], "Input", "listbeacon.txt")
+        if os.path.exists(beacon_file):
+            beaconmap = iBeaconUtils.parseBeaconSetting(beacon_file)
+            if mergeBeaconmap is None:
+                mergeBeaconmap = beaconmap
+            else:
+                if mergeBeaconmap!=beaconmap:
+                    print "invalid find listbeacon.txt for project data : " + project["dir"]
+                    print "listbeacon.txt should be same for all project data"
+                    sys.exit()
+                else:
+                    print "valid listbeacon.txt for project data : " + project["dir"]
+    
     # prepare output directory
     if not os.path.isdir(os.path.join(output_dir,"Ref")):
         FileUtils.makedir(os.path.join(output_dir,"Ref"))
@@ -131,29 +150,12 @@ def main():
         FileUtils.makedir(os.path.join(output_dir,"Output","SfM","reconstruction","global"))
     
     sfmDataList = []
-    sfmViewBeaconDataList = []
-    sfmBeaconMap = None
     for project in projectList:
         if not os.path.exists(project["sfm_data"]):
             print "cannot find sfm data : " + project["sfm_data"]
             sys.exit()
         with open(project["sfm_data"]) as jsonFile:
             sfmDataList.append(json.load(jsonFile))
-        
-        sfmBeaconFile = os.path.join(os.path.dirname(project["sfm_data"]), "beacon.txt")
-        if os.path.exists(sfmBeaconFile):
-            print "find beacon.txt for sfm data : " + project["sfm_data"]
-            imgBeaconList, beaconMap = iBeaconUtils.readBeaconData(sfmBeaconFile)
-            sfmViewBeaconDataList.append(imgBeaconList)
-            if sfmBeaconMap is None:
-                sfmBeaconMap = beaconMap
-            else:
-                if sfmBeaconMap!=beaconMap:
-                    print "invalid find beacon.txt for sfm data : " + project["sfm_data"]
-                    print "beacon.txt should be same for all merged sfm_data"
-                    sys.exit()
-                else:
-                    print "valid beacon.txt for sfm data : " + project["sfm_data"]
     
     AList = []
     for project in projectList:
@@ -175,13 +177,10 @@ def main():
     mergeSfmData = None
     mergePointId = None
     mergePointn = None
-    mergeSfmViewBeaconData = None
     for idx in range(0, len(sfmDataList)):
         if idx==0:
             mergeSfmData = sfmDataList[0]
             mergeSfM.transform_sfm_data(mergeSfmData, AList[0])
-            if len(sfmViewBeaconDataList)>0:
-                mergeSfmViewBeaconData = sfmViewBeaconDataList[0]
         else:
             mergePointThres = mergeSfM.findMedianStructurePointsThres(mergeSfmData, reconstructParam.mergePointThresMul)
             print "thres to merge 3D points : " + str(mergePointThres)
@@ -190,10 +189,8 @@ def main():
             print "number of points in base model : " + str(len(mergePointn[0]))
             print "number of points in model " + str(idx) + " : " + str(len(pointList[idx]))
             print "number of inliers : " + str(len(inlierMap))
-            if len(sfmViewBeaconDataList)>0:
-                mergeSfM.merge_sfm_data(mergeSfmData, sfmDataList[idx], AList[idx], {x[0]: x[1] for x in inlierMap}, mergeSfmViewBeaconData, sfmViewBeaconDataList[idx])
-            else:
-                mergeSfM.merge_sfm_data(mergeSfmData, sfmDataList[idx], AList[idx], {x[0]: x[1] for x in inlierMap})
+            
+            mergeSfM.merge_sfm_data(mergeSfmData, sfmDataList[idx], AList[idx], {x[0]: x[1] for x in inlierMap})
         
         mergePointId, mergePoint = mergeSfM.getAll3DPointloc(mergeSfmData)
         mergePointn = np.asarray(mergePoint, dtype=np.float).T
@@ -206,18 +203,15 @@ def main():
     mergeSfmData["root_path"] = os.path.join(output_dir,"Input","inputImg")
     
     resultSfMDataFile = os.path.join(output_dir,"Output","SfM","reconstruction","global","sfm_data.json")
-    
-    with open(os.path.join(resultSfMDataFile),"w") as jsonfile:
+    with open(resultSfMDataFile,"w") as jsonfile:
         json.dump(mergeSfmData, jsonfile)
     
-    if mergeSfmViewBeaconData is not None:
-        mergeSfmViewBeaconDataMapList = []
-        for key in mergeSfmViewBeaconData:
-            mergeSfmViewBeaconDataMap = {}
-            mergeSfmViewBeaconDataMap[key] = mergeSfmViewBeaconData[key]
-            mergeSfmViewBeaconDataMapList.append(mergeSfmViewBeaconDataMap)
-        iBeaconUtils.exportBeaconData(len(mergeSfmData["views"]), sfmBeaconMap, mergeSfmViewBeaconDataMapList, 
-                                      os.path.join(os.path.dirname(resultSfMDataFile), "beacon.txt"))
+    # write new beacon file
+    if mergeBeaconmap is not None:
+        iBeaconUtils.exportBeaconDataForSfmImageFrames(os.path.join(output_dir,"Input","csv"), resultSfMDataFile, 
+                                                       os.path.join(output_dir,"Input","listbeacon.txt"),
+                                                       os.path.join(output_dir,"Output","SfM","reconstruction","global","beacon.txt"), 
+                                                       reconstructIBeaconParam.normApproach)
     
     '''
     os.system(reconstructParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + resultSfMDataFile + " " + resultSfMDataFile)

@@ -237,6 +237,9 @@ class sfmGraphIBeacon(sfmMergeGraph.sfmGraph):
         FileUtils.makedir(model2.locFolLoc)
 
         # localize the images from model2 on model1
+        guideMatchOption = ""
+        if reconParam.bGuidedMatchingLocalize:
+            guideMatchOption = " -gm"
         if self.useBow:
             os.system(reconIBeaconParam.LOCALIZE_PROJECT_PATH + \
                       " " + inputImgTmpFolder + \
@@ -254,7 +257,8 @@ class sfmGraphIBeacon(sfmMergeGraph.sfmGraph):
                       " -n=" + str(reconIBeaconParam.normApproach) + \
                       " -kb=" + str(reconBOWParam.locKNNnum) + \
                       " -a=" + os.path.join(self.mMatchesPath, "BOWfile.yml") + \
-                      " -p=" + os.path.join(self.mMatchesPath, "PCAfile.yml"))                                  
+                      " -p=" + os.path.join(self.mMatchesPath, "PCAfile.yml") + \
+                      guideMatchOption)                                  
         else:
             os.system(reconIBeaconParam.LOCALIZE_PROJECT_PATH + \
                       " " + inputImgTmpFolder + \
@@ -269,7 +273,8 @@ class sfmGraphIBeacon(sfmMergeGraph.sfmGraph):
                       " -c=" + str(reconIBeaconParam.coocThres) + \
                       " -i=" + str(reconParam.locSkipFrame) + \
                       " -v=" + str(reconIBeaconParam.locSkipSelKNN) + \
-                      " -n=" + str(reconIBeaconParam.normApproach))
+                      " -n=" + str(reconIBeaconParam.normApproach) + \
+                      guideMatchOption)
                   
         # remove temporary image folder
         # removedir(inputImgTmpFolder)
@@ -404,7 +409,10 @@ class sfmGraphIBeacon(sfmMergeGraph.sfmGraph):
                 os.rename(os.path.join(sfmOutPath,"sfm_data.json"), \
                           os.path.join(sfmOutPath,"sfm_data_("+model1.name + "," + model2.name+").json"))
             '''
-                            
+            if os.path.isfile(os.path.join(sfmOutPath,"sfm_data.json")):
+                os.rename(os.path.join(sfmOutPath,"sfm_data.json"), \
+                          os.path.join(sfmOutPath,"sfm_data_fail_merge.json"))
+            
             # move to next video
             return False, sfmModelIBeacon("","","","","","","",validMergeRansacThres=0,validMergeRansacThresK=0,
                                           ransacStructureThres=0, ransacStructureThresK=0, 

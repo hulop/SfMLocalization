@@ -27,13 +27,29 @@
 		/*
 		var DATASET_NAME = 'toyosu-office';
 		*/
+		/*
 		var DATASET_NAME = 'nsh-4f-qolt-merge';
+		*/
+		/*
+		var DATASET_NAME = 'calmart-cnn';
+		*/
+		var DATASET_NAME = 'wacv-2017-u1-beacon-bow';
+		/*
+		var DATASET_NAME = 'wacv-2017-u1-full';
+		*/
 		var SFM_STRUCTURE_PLY_FILE = './data/offline/' + DATASET_NAME + '/colorized_global_structure.ply';
 		var SFM_CAMERA_PLY_FILE = './data/offline/' + DATASET_NAME + '/colorized_global_camera.ply';
+		var DENSE_STRUCTURE_PLY_FILE = './data/offline/'+ DATASET_NAME + '/option-merged-global.ply';		
 		var LOCALIZE_JSON_FILE = './data/offline/' + DATASET_NAME + '/loc_global.json';
 		var SHOW_GRID = true;
 		var SHOW_SFM_CAMERA = true;
+		var SHOW_DENSE_SCENE = false;		
+		var SHOW_LATEST_CAMERA = true;
+		var SHOW_HISTORY_CAMERA = true;		
 		var SHOW_GROUNDTRUTH_CAMERA = true;
+		
+		var FIX_CAMERA_VERTICAL = false;
+		var FIX_CAMERA_HORIZONTAL = false;
 		
 		$(document).ready(function(){
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
@@ -49,7 +65,9 @@
 			var renderer, controls, scene, camera, scene2d, camera2d;
 			var gridParent;
 			var sfmCameraParent;
+			var denseSceneParent;			
 			var locCameraPointsParent;
+			var histCameraPointsParent;
 			var groundTruthCameraParent;
 			
 			// view for query image
@@ -94,6 +112,48 @@
 				
 				$("<span/>",{
 					"class":"checkbox_label"
+				}).html("Show Dense Structure")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:SHOW_DENSE_SCENE,
+					name:"showDenseScene",
+					value:"showDenseScene"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					SHOW_DENSE_SCENE = $(this).is(":checked");
+				});
+				
+				$("<span/>",{
+					"class":"checkbox_label"
+				}).html("Show Latest Localization")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:SHOW_LATEST_CAMERA,
+					name:"showLatestCamera",
+					value:"showLatestCamera"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					SHOW_LATEST_CAMERA = $(this).is(":checked");
+				});
+				
+				$("<span/>",{
+					"class":"checkbox_label"
+				}).html("Show Localization History")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:SHOW_HISTORY_CAMERA,
+					name:"showHistoryCamera",
+					value:"showHistoryCamera"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					SHOW_HISTORY_CAMERA = $(this).is(":checked");
+				});
+				
+				$("<span/>",{
+					"class":"checkbox_label"
 				}).html("Show Ground Truth")
 				.appendTo(controlcontainer);
 				$("<input/>",{
@@ -104,6 +164,34 @@
 				}).appendTo(controlcontainer)
 				.on("change",function(){
 					SHOW_GROUNDTRUTH_CAMERA = $(this).is(":checked");
+				});
+				
+				$("<span/>",{
+					"class":"checkbox_label"
+				}).html("Fix Camera Vertical")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:FIX_CAMERA_VERTICAL,
+					name:"fixCameraVertical",
+					value:"fixCameraVertical"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					FIX_CAMERA_VERTICAL = $(this).is(":checked");
+				});				
+
+				$("<span/>",{
+					"class":"checkbox_label"
+				}).html("Fix Camera Horizontal")
+				.appendTo(controlcontainer);
+				$("<input/>",{
+					type:"checkbox",
+					checked:FIX_CAMERA_HORIZONTAL,
+					name:"fixCameraHorizontal",
+					value:"fixCameraHorizontal"
+				}).appendTo(controlcontainer)
+				.on("change",function(){
+					FIX_CAMERA_HORIZONTAL = $(this).is(":checked");
 				});
 				
 				$("<input/>",{
@@ -174,15 +262,17 @@
 				scene.add(gridParent);
 				
 				// draw structure PLY file
+				sparseSceneParent = new THREE.Object3D();				
 				var loader = new THREE.PLYLoader();
 				loader.addEventListener( 'load', function ( event ) {					
 					var geometry = event.content;
 					var materials = new THREE.PointCloudMaterial( { size: 0.05, vertexColors: THREE.VertexColors, transparent: true } );
 					var particles = new THREE.PointCloud(geometry, materials);
 					particles.colors = event.content.colors;
-					scene.add( particles );
+					sparseSceneParent.add( particles );
 				} );
 				loader.load( SFM_STRUCTURE_PLY_FILE );
+				scene.add(sparseSceneParent);
 				
 				// draw camera PLY file
 				sfmCameraParent = new THREE.Object3D();
@@ -197,10 +287,26 @@
 				loader.load( SFM_CAMERA_PLY_FILE );
 				scene.add(sfmCameraParent);
 				
+				// dense PLY file
+				denseSceneParent = new THREE.Object3D();
+				var loader = new THREE.PLYLoader();
+				loader.addEventListener( 'load', function ( event ) {
+					var geometry = event.content;
+					var materials = new THREE.PointCloudMaterial( { size: 0.02, vertexColors: THREE.VertexColors, transparent: true } );
+					var particles = new THREE.PointCloud(geometry, materials);
+					particles.colors = event.content.colors;
+					denseSceneParent.add( particles );
+				} );
+				loader.load( DENSE_STRUCTURE_PLY_FILE );
+				scene.add(denseSceneParent);
+				
 				// prepare camera points parent
 				locCameraPointsParent = new THREE.Object3D();
 				scene.add(locCameraPointsParent);
 
+				histCameraPointsParent = new THREE.Object3D();
+				scene.add(histCameraPointsParent);
+				
 				groundTruthCameraParent = new THREE.Object3D();
 				scene.add(groundTruthCameraParent);
 				
@@ -258,8 +364,20 @@
 				requestAnimationFrame( animate );
 				
 				gridParent.visible = SHOW_GRID ? true : false;
+				sparseSceneParent.visible = SHOW_DENSE_SCENE ? false : true;				
 				sfmCameraParent.visible = SHOW_SFM_CAMERA ? true : false;
+				denseSceneParent.visible = SHOW_DENSE_SCENE ? true : false;				
+				locCameraPointsParent.visible = SHOW_LATEST_CAMERA ? true : false;
+				histCameraPointsParent.visible = SHOW_HISTORY_CAMERA ? true : false;
 				groundTruthCameraParent.visible = SHOW_GROUNDTRUTH_CAMERA ? true : false;
+				
+				if (FIX_CAMERA_VERTICAL) {
+					camera.rotation.x = 0;
+					camera.rotation.y = 0;
+				}
+				if (FIX_CAMERA_HORIZONTAL) {
+					camera.rotation.z = 0;
+				}
 				
 				renderer.clear();
 			    renderer.render( scene, camera );
@@ -272,10 +390,13 @@
     			if (timer!=null) clearInterval(timer);
         	    for(var i=locCameraPointsParent.children.length-1; i>=0; i--){
         	    	locCameraPointsParent.remove(locCameraPointsParent.children[i]);
-        	    };
+        	    }
+        	    for(var i=histCameraPointsParent.children.length-1; i>=0; i--){
+        	    	histCameraPointsParent.remove(histCameraPointsParent.children[i]);
+        	    }
         	    for(var i=groundTruthCameraParent.children.length-1; i>=0; i--){
         	    	groundTruthCameraParent.remove(groundTruthCameraParent.children[i]);
-        	    };
+        	    }
         	    
 				$.ajax({
 			        type: "GET",
@@ -283,7 +404,7 @@
 			        dataType: "json",
 			        success: function(jsonData) {
 			        	var data = jsonData["locGlobal"];
-			        	
+						
 			            for(var i=0; i < data.length; i++){
 			            	centerPoints.push(data[i]["t"]);
 			            	rotationMats.push(data[i]["R"]);
@@ -296,12 +417,19 @@
 			        	var i=0;
 			        	timer = setInterval(function(){
 			        		if (i<centerPoints.length) {
+					        	// clear previous camera position
+					        	if (data.length>0) {
+									for(var j=locCameraPointsParent.children.length-1; j>=0; j--){
+										locCameraPointsParent.remove(locCameraPointsParent.children[j]);
+									}									
+					        	}
+			        			
 			        			// draw query image
 			        			var queryImageName = new String(queryImages[i]).substring(queryImages[i].lastIndexOf('/') + 1);
 				        		createViewImage('data/offline/' + DATASET_NAME + '/image/' + queryImageName, 0.4);
 				        		
 				        		// draw localized point by query image
-								//drawPoint(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], 0xFF0000);
+								drawPoint(histCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], 0xFF0000);
 								drawPyramid(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], rotationMats[i], 0xFF0000);
 								
 				        		// draw groundtruth point

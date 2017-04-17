@@ -22,6 +22,8 @@
 
 #include "SfMDataUtils.h"
 
+#include <openMVG/version.hpp>
+
 using namespace std;
 using namespace openMVG;
 using namespace openMVG::sfm;

@@ -164,6 +164,9 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
         FileUtils.makedir(model2.locFolLoc)
 
         # localize the images from model2 on model1
+        guideMatchOption = ""
+        if reconParam.bGuidedMatchingLocalize:
+            guideMatchOption = " -gm"
         os.system(reconParam.LOCALIZE_PROJECT_PATH + \
                   " " + inputImgTmpFolder + \
                   " " + os.path.dirname(model1.sfm_dataLoc) + \
@@ -171,9 +174,11 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
                   " " + model2.locFolLoc + \
                   " -f=" + str(reconParam.locFeatDistRatio) + \
                   " -r=" + str(reconParam.locRansacRound) + \
+                  " -i=" + str(reconParam.locSkipFrame) + \
                   " -k=" + str(reconBOWParam.locKNNnum) + \
                   " -a=" + os.path.join(self.mMatchesPath, "BOWfile.yml") + \
-                  " -p=" + os.path.join(self.mMatchesPath, "PCAfile.yml"))
+                  " -p=" + os.path.join(self.mMatchesPath, "PCAfile.yml") + \
+                  guideMatchOption)
                   
         # remove temporary image folder
         # removedir(inputImgTmpFolder)
@@ -308,7 +313,10 @@ class sfmGraphBOW(sfmMergeGraph.sfmGraph):
                 os.rename(os.path.join(sfmOutPath,"sfm_data.json"), \
                           os.path.join(sfmOutPath,"sfm_data_("+model1.name + "," + model2.name+").json"))
             '''
-                            
+            if os.path.isfile(os.path.join(sfmOutPath,"sfm_data.json")):
+                os.rename(os.path.join(sfmOutPath,"sfm_data.json"), \
+                          os.path.join(sfmOutPath,"sfm_data_fail_merge.json"))
+            
             # move to next video
             return False, sfmModelBOW("","","","","","",validMergeRansacThres=0,validMergeRansacThresK=0,
                                       ransacStructureThres=0, ransacStructureThresK=0, 

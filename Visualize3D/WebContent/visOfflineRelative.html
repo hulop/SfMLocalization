@@ -267,6 +267,13 @@
 			        	var i=0;
 			        	timer = setInterval(function(){
 			        		if (i<centerPoints.length) {
+					        	// clear previous camera position
+					        	if (data.length>0) {
+									for(var j=locCameraPointsParent.children.length-1; j>=0; j--){
+										locCameraPointsParent.remove(locCameraPointsParent.children[j]);
+									}
+					        	}
+					        	
 			        			// draw query image
 			        			var queryImageName = new String(queryImages[i]).substring(queryImages[i].lastIndexOf('/') + 1);
 				        		createViewImage('data/offline/' + DATASET_NAME + '/image/' + queryImageName, 0.4);

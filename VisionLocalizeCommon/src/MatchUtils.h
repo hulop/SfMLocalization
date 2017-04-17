@@ -28,6 +28,7 @@
 #include <openMVG/sfm/sfm_data.hpp>
 #include <openMVG/matching/indMatch.hpp>
 #include <openMVG/sfm/pipelines/sfm_regions_provider.hpp>
+#include <openMVG/sfm/pipelines/sfm_features_provider.hpp>
 
 namespace hulo {
 

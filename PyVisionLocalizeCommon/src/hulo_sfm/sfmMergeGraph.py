@@ -20,6 +20,8 @@
 # THE SOFTWARE.
 ################################################################################
 
+# -*- coding: utf-8 -*-
+
 import os
 import json
 import numpy as np
@@ -186,9 +188,9 @@ class sfmGraph:
         graphEdges = np.zeros((nModel,nModel),dtype=np.float32)
         
         for i in range(0,nModel-1):
-            for j in range(i+1,nModel):   
+            for j in range(i+1,nModel):
                 graphEdges[i,j] = 1.0
-                graphEdges[j,i] = 1.0                
+                graphEdges[j,i] = 1.0
         
         print "Complete calculating graph edges between videos"
         return graphEdges
@@ -235,6 +237,9 @@ class sfmGraph:
         FileUtils.makedir(model2.locFolLoc)
 
         # localize the images from model2 on model1
+        guideMatchOption = ""
+        if reconParam.bGuidedMatchingLocalize:
+            guideMatchOption = " -gm"
         os.system(reconParam.LOCALIZE_PROJECT_PATH + \
                   " " + inputImgTmpFolder + \
                   " " + os.path.dirname(model1.sfm_dataLoc) + \
@@ -243,7 +248,8 @@ class sfmGraph:
                   " -f=" + str(reconParam.locFeatDistRatio) + \
                   " -r=" + str(reconParam.locRansacRound) + \
                   " -e=" + model2.csvFolLoc + \
-                  " -i=" + str(reconParam.locSkipFrame))
+                  " -i=" + str(reconParam.locSkipFrame) + \
+                  guideMatchOption)
                   
         # remove temporary image folder
         # removedir(inputImgTmpFolder)
@@ -378,6 +384,9 @@ class sfmGraph:
                 os.rename(os.path.join(sfmOutPath,"sfm_data.json"), \
                           os.path.join(sfmOutPath,"sfm_data_("+model1.name + "," + model2.name+").json"))
             '''
+            if os.path.isfile(os.path.join(sfmOutPath,"sfm_data.json")):
+                os.rename(os.path.join(sfmOutPath,"sfm_data.json"), \
+                          os.path.join(sfmOutPath,"sfm_data_fail_merge.json"))
             
             # move to next video
             return False, sfmModel("","","","","","",validMergeRansacThres=0,validMergeRansacThresK=0,
@@ -395,8 +404,6 @@ class sfmGraph:
         
         # TODO : revisit the order of bundle adjustment
         # perform bundle adjustment
-        # modified by T.Ishihara 2016.04.08
-        # fix only translation at first
         '''
         os.system(reconParam.BUNDLE_ADJUSTMENT_PROJECT_PATH + " " + os.path.join(sfmOutPath,"sfm_data.json") + " " + os.path.join(sfmOutPath,"sfm_data.json") + \
                   " -c=" + "rs,rst,rsti" + " -r=" + "1")

@@ -24,6 +24,7 @@
 #include <Eigen/Core>
 #include <sfm/sfm_data.hpp>
 #include <sfm/sfm_data_io.hpp>
+#include <openMVG/version.hpp>
 #include <openMVG/features/regions.hpp>
 #include <openMVG/features/regions_factory.hpp>
 #include <openMVG/sfm/pipelines/sfm_robust_model_estimation.hpp>
@@ -41,6 +42,7 @@
 #include "BoFUtils.h"
 #include "MatchUtils.h"
 #include "FileUtils.h"
+#include "HuloSfMRegionsProvider.h"
 
 using namespace std;
 using namespace cv;
@@ -53,7 +55,10 @@ using namespace openMVG::matching;
 using namespace hulo;
 
 #define THRESHOLD_CALC_BEACON_COOCCURRENCE 10
-#define MINUM_NUMBER_OF_SAME_BEACONS 2
+// setting for version 0.2
+//#define MINUM_NUMBER_OF_SAME_BEACONS 2
+// modified for WACV 2017
+#define MINUM_NUMBER_OF_SAME_BEACONS 1
 
 #define MINUM_NUMBER_OF_POINT_PUTATIVE_MATCH 16
 #define MINUM_NUMBER_OF_POINT_RESECTION 8
@@ -85,6 +90,7 @@ const String keys =
 		"{p pcaModelFile	||PCA model file}"
 		"{i locEvryNFrame	|1|Localize every i^th frame}"
 		"{g geomLimit		|4.0|geometric matching precision}"
+		"{gm guidedMatch	|false|use guided matching for geometric matching}"
 		"{v skipBeaconView	|1|select close iBeacon with this interval}"
 		"{n normBeaconApproach |0|normalization approach for beacon [0 for max, 1 for median]}";
 
@@ -120,9 +126,9 @@ int main(int argc, char **argv) {
 	string pcaFile = parser.get<string>("p");
 	int locEvryNFrame = parser.get<int>("i");
 	double geomPrec = parser.get<double>("g");
+	bool bGuided_matching = parser.get<bool>("gm");
 	int skipBeaconView = parser.get<int>("v");
 	int normBeaonTypeInt = parser.get<int>("n");
-	bool bGuided_matching = false;
 
     if (!parser.check() || sQueryImg.size()==0 || sSfMDir.size()==0
     		|| sMatchesDir.size()==0 || sOutputFolder.size()==0) {
@@ -235,7 +241,7 @@ int main(int argc, char **argv) {
 	// construct feature providers for geometric matches
 	unique_ptr<Regions> regions;
 	regions.reset(new AKAZE_Binary_Regions);
-	shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
+	shared_ptr<HuloSfMRegionsProvider> regions_provider = make_shared<HuloSfMRegionsProvider>();
 	if (!regions_provider->load(sfm_data, sMatchesDir, regions)) {
 		cerr << "Cannot construct regions providers," << endl;
 		return EXIT_FAILURE;
@@ -314,28 +320,40 @@ int main(int argc, char **argv) {
 		}
 		double endBeacon = (double) getTickCount();
 
-		if (bowFile != "" && knnbow > 0 && localViews.size() > knnbow) {
-			cv::Mat bofMat;
-			if (pcaFile != "") {
-				vector<cv::KeyPoint> keypoints;
-				cv::Mat descriptors =
-						denseLocalFeatureWrapper->calcDenseLocalFeature(
-								sQueryImg, keypoints);
-				cv::Mat pcaDescriptors = pcaWrapper->calcPcaProject(
-						descriptors);
-				bofMat = bofPyramids->calcBoF(pcaDescriptors, keypoints);
-			} else {
-				std::vector<cv::KeyPoint> keypoints;
-				cv::Mat descriptors =
-						denseLocalFeatureWrapper->calcDenseLocalFeature(
-								sQueryImg, keypoints);
-				bofMat = bofPyramids->calcBoF(descriptors, keypoints);
+		if (bowFile != "" && knnbow > 0) {
+			if (localViews.size()==0) {
+				for (Views::const_iterator iter = sfm_data.views.begin(); iter != sfm_data.views.end(); iter++) {
+					if (sfm_data.poses.find(iter->second->id_pose) != sfm_data.poses.end()) {
+						localViews.insert(iter->first);
+					}
+				}
 			}
-			set<openMVG::IndexT> bofSelectedViews;
-			hulo::selectViewByBoF(bofMat, sMatchesDir, localViews, sfm_data, knnbow, bofSelectedViews);
-			localViews.clear();
-			localViews = set<openMVG::IndexT>(bofSelectedViews);
-			cout << "number of selected local views by bow : " << localViews.size() << endl;
+
+			if (localViews.size() > knnbow) {
+				cv::Mat bofMat;
+				if (pcaFile != "") {
+					vector<cv::KeyPoint> keypoints;
+					cv::Mat descriptors =
+							denseLocalFeatureWrapper->calcDenseLocalFeature(
+									sQueryImg, keypoints);
+					cv::Mat pcaDescriptors = pcaWrapper->calcPcaProject(
+							descriptors);
+					bofMat = bofPyramids->calcBoF(pcaDescriptors, keypoints);
+				} else {
+					std::vector<cv::KeyPoint> keypoints;
+					cv::Mat descriptors =
+							denseLocalFeatureWrapper->calcDenseLocalFeature(
+									sQueryImg, keypoints);
+					bofMat = bofPyramids->calcBoF(descriptors, keypoints);
+				}
+				set<openMVG::IndexT> bofSelectedViews;
+				hulo::selectViewByBoF(bofMat, sMatchesDir, localViews, sfm_data, knnbow, bofSelectedViews);
+				localViews.clear();
+				localViews = set<openMVG::IndexT>(bofSelectedViews);
+				cout << "number of selected local views by bow : " << localViews.size() << endl;
+			} else {
+				cout << "skip selecting local views by bow" << endl;
+			}
 		}
 
 		// add query image to sfm_data
@@ -345,7 +363,7 @@ int main(int argc, char **argv) {
 				make_pair(indQueryFile,
 						make_shared<View>(stlplus::basename_part(sQueryImg),
 								indQueryFile, 0, 0, qImgW, qImgH)));
-		regions_provider->regions_per_view[indQueryFile] = std::move(queryRegions);
+		regions_provider->set(indQueryFile, queryRegions);
 		cout << "image # " << imageNumber << "/" << listImage.size() << endl;
 		cout << "query ind: " << indQueryFile << endl;
 		cout << "fileLoc:" << sfm_data.views.at(indQueryFile)->s_Img_path
@@ -392,7 +410,7 @@ int main(int argc, char **argv) {
 
 			// remove added image from sfm_data
 			sfm_data.views.erase(indQueryFile);
-			regions_provider->regions_per_view.erase(indQueryFile);
+			regions_provider->erase(indQueryFile);
 
 			// print time
 			double end = (double) getTickCount();
@@ -480,7 +498,7 @@ int main(int argc, char **argv) {
 
 			// remove added image from sfm_data
 			sfm_data.views.erase(indQueryFile);
-			regions_provider->regions_per_view.erase(indQueryFile);
+			regions_provider->erase(indQueryFile);
 
 			// print time
 			double end = (double) getTickCount();
@@ -575,7 +593,7 @@ int main(int argc, char **argv) {
 
 		// remove added image from sfm_data
 		sfm_data.views.erase(indQueryFile);
-		regions_provider->regions_per_view.erase(indQueryFile);
+		regions_provider->erase(indQueryFile);
 
 		// if localization reach this part, it means a localization is found,
 		// hence we will localize locEvryNFrame frames after this frame

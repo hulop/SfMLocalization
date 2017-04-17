@@ -28,6 +28,7 @@
 #include "SfMDataUtils.h"
 
 #include <opencv2/opencv.hpp>
+#include <openMVG/version.hpp>
 #include <openMVG/matching_image_collection/GeometricFilter.hpp>
 #include <openMVG/matching_image_collection/F_ACRobust.hpp>
 

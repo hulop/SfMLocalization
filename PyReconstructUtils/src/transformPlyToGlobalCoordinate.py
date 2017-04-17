@@ -57,8 +57,8 @@ def main():
     fwrite = open(output_ply_file, "w")
         
     for line in fread:
-        tokens = line.split()        
-        if len(tokens)==8:
+        tokens = line.split()
+        if len(tokens)==6 or len(tokens)==8:
             rPoint = np.array([float(tokens[0]), float(tokens[1]), float(tokens[2]), 1.0])
             gPoint = np.dot(Amat,rPoint)
             fwrite.write(str(gPoint[0]) + " " + str(gPoint[1]) + " " + str(gPoint[2]) + " " + " ".join(tokens[3:]) + "\n")

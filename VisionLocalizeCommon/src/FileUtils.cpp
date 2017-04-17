@@ -23,6 +23,7 @@
 #include "FileUtils.h"
 
 #include <fstream>
+#include <openMVG/version.hpp>
 #include <openMVG/features/descriptor.hpp>
 #include <openMVG/matching/indMatch_utils.hpp>
 #include "StringUtils.h"

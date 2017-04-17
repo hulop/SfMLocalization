@@ -95,6 +95,9 @@ def main():
                 shutil.rmtree(TEST_FOLDER_LOC)
             os.mkdir(TEST_FOLDER_LOC)
             
+            guideMatchOption = ""
+            if reconstructParam.bGuidedMatchingLocalize:
+                guideMatchOption = " -gm"            
             if USE_BOW and not USE_BEACON:
                 os.system(reconstructParam.LOCALIZE_PROJECT_PATH + \
                           " " + os.path.join(TEST_DIR,"inputImg") + \
@@ -105,7 +108,8 @@ def main():
                           " -r=" + str(localizeParam.locRansacRound) + \
                           " -k=" + str(localizeBOWParam.locKNNnum) + \
                           " -a=" + BOW_FILE + \
-                          " -p=" + PCA_FILE)
+                          " -p=" + PCA_FILE + \
+                          guideMatchOption)
             elif not USE_BOW and USE_BEACON:
                 os.system(reconstructIBeaconParam.LOCALIZE_PROJECT_PATH + \
                           " " + os.path.join(TEST_DIR,"inputImg") + \
@@ -119,7 +123,8 @@ def main():
                           " -k=" + str(localizeIBeaconParam.locKNNnum) + \
                           " -c=" + str(localizeIBeaconParam.coocThres) + \
                           " -v=" + str(localizeIBeaconParam.locSkipSelKNN) + \
-                          " -n=" + str(localizeIBeaconParam.normApproach))
+                          " -n=" + str(localizeIBeaconParam.normApproach) + \
+                          guideMatchOption)
             elif USE_BOW and USE_BEACON:
                 os.system(reconstructIBeaconParam.LOCALIZE_PROJECT_PATH + \
                           " " + os.path.join(TEST_DIR,"inputImg") + \
@@ -136,7 +141,8 @@ def main():
                           " -n=" + str(localizeIBeaconParam.normApproach) + \
                           " -kb=" + str(localizeBOWParam.locKNNnum) + \
                           " -a=" + BOW_FILE + \
-                          " -p=" + PCA_FILE)
+                          " -p=" + PCA_FILE + \
+                          guideMatchOption)
             else:
                 os.system(reconstructParam.LOCALIZE_PROJECT_PATH + \
                           " " + os.path.join(TEST_DIR,"inputImg") + \
@@ -144,7 +150,8 @@ def main():
                           " " + matches_dir + \
                           " " + TEST_FOLDER_LOC + \
                           " -f=" + str(localizeParam.locFeatDistRatio) + \
-                          " -r=" + str(localizeParam.locRansacRound))
+                          " -r=" + str(localizeParam.locRansacRound) + \
+                          guideMatchOption)
             
             # extract centers from all json file and write to a file
             fileLoc = open(os.path.join(TEST_FOLDER_LOC,"center.txt"),"w")

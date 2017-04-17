@@ -36,6 +36,10 @@ using namespace openMVG::sfm;
 void hulo::normalizeBeacon(cv::Mat &rssi, NormBeaconSignalType normBeaconType){
 	CV_Assert(normBeaconType==NormBeaconSignalType::MAX || normBeaconType==NormBeaconSignalType::MEDIAN);
 
+	if(cv::countNonZero(rssi)==0) {
+		return;
+	}
+
 	if(normBeaconType==NormBeaconSignalType::MAX){
 		// convert to float matrix
 		cv::Mat floatRssi;

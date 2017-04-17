@@ -24,6 +24,7 @@
 #include <Eigen/Core>
 #include <sfm/sfm_data.hpp>
 #include <sfm/sfm_data_io.hpp>
+#include <openMVG/version.hpp>
 #include <openMVG/features/regions.hpp>
 #include <openMVG/features/regions_factory.hpp>
 #include <openMVG/sfm/pipelines/sfm_robust_model_estimation.hpp>
@@ -40,6 +41,7 @@
 #include "BoFUtils.h"
 #include "MatchUtils.h"
 #include "FileUtils.h"
+#include "HuloSfMRegionsProvider.h"
 
 using namespace std;
 using namespace cv;
@@ -76,7 +78,8 @@ const String keys =
 		"{a bowModelFile	||BOW model file}"
 		"{p pcaModelFile	||PCA model file}"
 		"{i locEvryNFrame	|1|Localize every i^th frame}"
-		"{g geomLimit		|4.0|geometric matching precision}";
+		"{g geomLimit		|4.0|geometric matching precision}"
+		"{gm guidedMatch	|false|use guided matching for geometric matching}";
 
 int main(int argc, char **argv) {
 	// Parse arguments
@@ -106,7 +109,7 @@ int main(int argc, char **argv) {
 	string pcaFile = parser.get<string>("p");
 	int locEvryNFrame = parser.get<int>("i");
 	double geomPrec = parser.get<double>("g");
-	bool bGuided_matching = false;
+	bool bGuided_matching = parser.get<bool>("gm");
 
     if (!parser.check() || sQueryImg.size()==0 || sSfMDir.size()==0
     		|| sMatchesDir.size()==0 || sOutputFolder.size()==0) {
@@ -199,7 +202,7 @@ int main(int argc, char **argv) {
 	// construct feature providers for geometric matches
 	unique_ptr<Regions> regions;
 	regions.reset(new AKAZE_Binary_Regions);
-	shared_ptr<Regions_Provider> regions_provider = make_shared<Regions_Provider>();
+	shared_ptr<HuloSfMRegionsProvider> regions_provider = make_shared<HuloSfMRegionsProvider>();
 	if (!regions_provider->load(sfm_data, sMatchesDir, regions)) {
 		cerr << "Cannot construct regions providers," << endl;
 		return EXIT_FAILURE;
@@ -300,7 +303,7 @@ int main(int argc, char **argv) {
 				make_pair(indQueryFile,
 						make_shared<View>(stlplus::basename_part(sQueryImg),
 								indQueryFile, 0, 0, qImgW, qImgH)));
-		regions_provider->regions_per_view[indQueryFile] = std::move(queryRegions);
+		regions_provider->set(indQueryFile, queryRegions);
 		cout << "image # " << imageNumber << "/" << listImage.size() << endl;
 		cout << "query ind: " << indQueryFile << endl;
 		cout << "fileLoc:" << sfm_data.views.at(indQueryFile)->s_Img_path
@@ -347,7 +350,7 @@ int main(int argc, char **argv) {
 
 			// remove added image from sfm_data
 			sfm_data.views.erase(indQueryFile);
-			regions_provider->regions_per_view.erase(indQueryFile);
+			regions_provider->erase(indQueryFile);
 
 			// print time
 			double end = (double) getTickCount();
@@ -435,7 +438,7 @@ int main(int argc, char **argv) {
 
 			// remove added image from sfm_data
 			sfm_data.views.erase(indQueryFile);
-			regions_provider->regions_per_view.erase(indQueryFile);
+			regions_provider->erase(indQueryFile);
 
 			// print time
 			double end = (double) getTickCount();
@@ -530,7 +533,7 @@ int main(int argc, char **argv) {
 
 		// remove added image from sfm_data
 		sfm_data.views.erase(indQueryFile);
-		regions_provider->regions_per_view.erase(indQueryFile);
+		regions_provider->erase(indQueryFile);
 
 		// if localization reach this part, it means a localization is found,
 		// hence we will localize locEvryNFrame frames after this frame

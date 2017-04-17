@@ -85,7 +85,6 @@
 									<listOptionValue builtIn="false" value="lib_CoinUtils"/>
 									<listOptionValue builtIn="false" value="lib_Osi"/>
 									<listOptionValue builtIn="false" value="lib_clp"/>
-									<listOptionValue builtIn="false" value="vlsift"/>
 									<listOptionValue builtIn="false" value="flann_cpp_s"/>
 									<listOptionValue builtIn="false" value="lemon"/>
 									<listOptionValue builtIn="false" value="easyexif"/>
@@ -191,7 +190,6 @@
 									<listOptionValue builtIn="false" value="lib_CoinUtils"/>
 									<listOptionValue builtIn="false" value="lib_Osi"/>
 									<listOptionValue builtIn="false" value="lib_clp"/>
-									<listOptionValue builtIn="false" value="vlsift"/>
 									<listOptionValue builtIn="false" value="flann_cpp_s"/>
 									<listOptionValue builtIn="false" value="lemon"/>
 									<listOptionValue builtIn="false" value="easyexif"/>

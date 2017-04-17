@@ -33,8 +33,6 @@ numBoards = 60 # number of boards to capture
 square_size = 1.0
 pattern_size = (9, 6)
 calib_image_path_pattern = "../img/*.jpg"
-input_image_path_pattern = "/Input/*/inputImg/*.jpg"
-#input_image_path_pattern = "/Ref/inputImg/*.jpg"    
 output_K_file = "../data/K.txt"
 output_dist_file = "../data/dist.txt"
 #########################
@@ -43,18 +41,17 @@ def main():
     description = 'This script is for undistorting images. ' + \
         'Before running this program, please prepare images which take chessboard'
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('project_path', action='store', nargs=None, const=None, \
+    parser.add_argument('input_image_path_pattern', action='store', nargs=None, const=None, \
                         default=None, type=str, choices=None, metavar=None, \
-                        help='Directory path where chessboard photos are located.')
+                        help='Input image path pattern which will be undistorted.')
     args = parser.parse_args()
-    projectPath = args.project_path
+    input_image_path_pattern = args.input_image_path_pattern
     
     # read fixed settings
     global numBoards
     global square_size
     global pattern_size
     global calib_image_path_pattern
-    global input_image_path_pattern
     global output_K_file
     global output_dist_file
     
@@ -96,7 +93,7 @@ def main():
         with open(output_dist_file,"r") as fr:
             dist = numpy.loadtxt(fr)
     
-    for fn in glob(projectPath + input_image_path_pattern):
+    for fn in glob(input_image_path_pattern):
         print "undistort image : " + fn
         im = cv2.imread(fn)
         h, w = im.shape[:2]

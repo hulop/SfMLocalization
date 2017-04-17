@@ -127,21 +127,27 @@ def main():
                 if len(sfm_data["intrinsics"]) == 0:
                     for view in sfm_data["views"]:
                         view["value"]["ptr_wrapper"]["data"]["id_intrinsic"] = 0;
-                        
+                    
+                    # for compatibility of OpenMVG older than 1.1
+                    sfm_data_version = float(sfm_data["sfm_data_version"])
+                    sfm_data_intrinsics_value_key = "value"
+                    if sfm_data_version<0.3:
+                        sfm_data_intrinsics_value_key = "values"
+                    
                     sfm_data["intrinsics"].append({})
                     sfm_data["intrinsics"][0]["key"] = 0
-                    sfm_data["intrinsics"][0]["values"] = {}
-                    # sfm_data["intrinsics"][0]["values"]["polymorphic_name"] = "pinhole_radial_k3"
-                    sfm_data["intrinsics"][0]["values"]["polymorphic_name"] = "pinhole"
-                    sfm_data["intrinsics"][0]["values"]["polymorphic_id"] = 2147999999
-                    sfm_data["intrinsics"][0]["values"]["ptr_wrapper"] = {}
-                    sfm_data["intrinsics"][0]["values"]["ptr_wrapper"]["id"] = 2147483660
-                    sfm_data["intrinsics"][0]["values"]["ptr_wrapper"]["data"] = {}
-                    sfm_data["intrinsics"][0]["values"]["ptr_wrapper"]["data"]["width"] = wImg
-                    sfm_data["intrinsics"][0]["values"]["ptr_wrapper"]["data"]["height"] = hImg
-                    sfm_data["intrinsics"][0]["values"]["ptr_wrapper"]["data"]["focal_length"] = reconstructParam.focalLength
-                    sfm_data["intrinsics"][0]["values"]["ptr_wrapper"]["data"]["disto_k3"] = [0, 0, 0]
-                    sfm_data["intrinsics"][0]["values"]["ptr_wrapper"]["data"]["principal_point"] = [wImg / 2, hImg / 2]
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key] = {}
+                    # sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["polymorphic_name"] = "pinhole_radial_k3"
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["polymorphic_name"] = "pinhole"
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["polymorphic_id"] = 2147999999
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["ptr_wrapper"] = {}
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["ptr_wrapper"]["id"] = 2147483660
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["ptr_wrapper"]["data"] = {}
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["ptr_wrapper"]["data"]["width"] = wImg
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["ptr_wrapper"]["data"]["height"] = hImg
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["ptr_wrapper"]["data"]["focal_length"] = reconstructParam.focalLength
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["ptr_wrapper"]["data"]["disto_k3"] = [0, 0, 0]
+                    sfm_data["intrinsics"][0][sfm_data_intrinsics_value_key]["ptr_wrapper"]["data"]["principal_point"] = [wImg / 2, hImg / 2]
                     
             with open(os.path.join(sfm_matchesDir, "sfm_data.json"), "w") as sfm_data_file:
                 json.dump(sfm_data, sfm_data_file)
@@ -152,12 +158,15 @@ def main():
                                                            os.path.join(inputPath, "listbeacon.txt"), os.path.join(sfm_matchesDir, "beacon.txt"), 
                                                            reconstructIBeaconParam.normApproach)
             
+            guideMatchOption = ""
+            if reconstructParam.bGuidedMatching:
+                guideMatchOption = " -gm"            
             os.system(reconstructParam.EXTRACT_FEATURE_MATCH_PROJECT_PATH + \
                       " " + sfm_matchesDir + \
                       " -mf=" + str(reconstructParam.maxTrackletMatchDistance) + \
                       " -mm=" + str(reconstructParam.minMatchToRetain) + \
                       " -f=" + str(reconstructParam.extFeatDistRatio) + \
-                      " -r=" + str(reconstructParam.extFeatRansacRound))
+                      " -r=" + str(reconstructParam.extFeatRansacRound) + guideMatchOption)
             
             # OpenMVG assumes matches.e.txt for global reconstruction, matches.f.txt for incremental reconstruction
             os.system("cp " + os.path.join(sfm_matchesDir, "matches.f.txt") + " " + os.path.join(sfm_matchesDir, "matches.e.txt"))
@@ -167,7 +176,8 @@ def main():
             while not os.path.isfile(os.path.join(sfm_globalDir, "sfm_data.json")) and countRecon < reconstructParam.rerunRecon:  
                 os.system("openMVG_main_GlobalSfM -i " + os.path.join(sfm_matchesDir, "sfm_data.json") + " -m " + sfm_matchesDir + " -o " + sfm_globalDir)
                 # for OpenMVG 1.0
-                #os.system("openMVG_main_ConvertSfM_DataFormat -i " + os.path.join(sfm_globalDir, "sfm_data.bin") + " -o " + os.path.join(sfm_globalDir, "sfm_data.json"))
+                if os.path.exists(os.path.join(sfm_globalDir, "sfm_data.bin")):
+                    os.system("openMVG_main_ConvertSfM_DataFormat -i " + os.path.join(sfm_globalDir, "sfm_data.bin") + " -o " + os.path.join(sfm_globalDir, "sfm_data.json"))
                 countRecon = countRecon + 1
                 time.sleep(1)
             
