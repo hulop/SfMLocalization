@@ -81,6 +81,77 @@ const String keys =
 		"{g geomLimit		|4.0|geometric matching precision}"
 		"{gm guidedMatch	|false|use guided matching for geometric matching}";
 
+void saveResultJson(string sOutputFolder, string sQueryImg, string sSfM_data, string sMatchesDir) {
+	if (sOutputFolder.length() > 0) {
+		ofstream os(
+				stlplus::create_filespec(sOutputFolder,
+						stlplus::basename_part(sQueryImg), "json"));
+		if (os.is_open()) {
+
+			// set output format for matrix and vector
+			IOFormat matFormat(6, 0, ",", ",\n", "[", "]", "[", "]");
+			IOFormat vecFormat(6, 0, ",", ",\n", "", "", "[", "]");
+
+			// output json
+			os << "{" << endl;
+			os << "\t\"filename\": \"" << sQueryImg << "\"," << endl;
+			os << "\t\"sfm_data\": \"" << sSfM_data << "\"," << endl;
+			os << "\t\"matches_dir\": \"" << sMatchesDir << "\"" << endl;
+			os << "}" << endl;
+			os.close();
+		} else {
+			cerr << "cannot write out result to "
+					<< stlplus::create_filespec(sOutputFolder,
+							stlplus::basename_part(sQueryImg), "json")
+					<< endl;
+		}
+	}
+}
+
+void saveResultJson(string sOutputFolder, string sQueryImg, string sSfM_data, string sMatchesDir,
+		const MapViewFeatTo3D &mapViewFeatTo3D, const Image_Localizer_Match_Data &resection_data,
+		QFeatTo3DFeat& mapFeatTo3DFeat, Mat3& K_, Mat3& R_, Vec3& t_, Vec3& t_out) {
+	if (sOutputFolder.length() > 0) {
+		ofstream os(
+				stlplus::create_filespec(sOutputFolder,
+						stlplus::basename_part(sQueryImg), "json"));
+		if (os.is_open()) {
+
+			// set output format for matrix and vector
+			IOFormat matFormat(6, 0, ",", ",\n", "[", "]", "[", "]");
+			IOFormat vecFormat(6, 0, ",", ",\n", "", "", "[", "]");
+
+			// output json
+			os << "{" << endl;
+			os << "\t\"filename\": \"" << sQueryImg << "\"," << endl;
+			os << "\t\"sfm_data\": \"" << sSfM_data << "\"," << endl;
+			os << "\t\"matches_dir\": \"" << sMatchesDir << "\"," << endl;
+			os << "\t\"K\": " << K_.format(matFormat) << "," << endl;
+			os << "\t\"R\": " << R_.format(matFormat) << "," << endl;
+			os << "\t\"t\": " << t_out.format(vecFormat) << "," << endl;
+			os << "\t\"pair\": [";
+			for (vector<size_t>::const_iterator iterW = resection_data.vec_inliers.begin();
+					iterW != resection_data.vec_inliers.end(); ++iterW) {
+				pair<size_t, size_t> pairM = *(mapFeatTo3DFeat.begin()
+						+ *iterW);
+				os << "[" << pairM.first << "," << pairM.second << "]";
+				if (iterW + 1 != resection_data.vec_inliers.end()) {
+					os << ",";
+				}
+			}
+
+			os << "]" << endl;
+			os << "}" << endl;
+			os.close();
+		} else {
+			cerr << "cannot write out result to "
+					<< stlplus::create_filespec(sOutputFolder,
+							stlplus::basename_part(sQueryImg), "json")
+					<< endl;
+		}
+	}
+}
+
 int main(int argc, char **argv) {
 	// Parse arguments
 	CommandLineParser parser(argc, argv, keys);
@@ -366,7 +437,11 @@ int main(int argc, char **argv) {
 					<< " s\n";
 			cout << "Total time: " << (end - start) / getTickFrequency()
 					<< " s\n";
+			
+			saveResultJson(sOutputFolder, sQueryImg, sSfM_data, sMatchesDir);
 
+			// delete query image match folder
+			stlplus::folder_delete(sQueryImgMatchDir, true);
 			continue;
 		}
 
@@ -459,6 +534,10 @@ int main(int argc, char **argv) {
 			cout << "Total time: " << (end - start) / getTickFrequency()
 					<< " s\n";
 
+			saveResultJson(sOutputFolder, sQueryImg, sSfM_data, sMatchesDir);
+
+			// delete query image match folder
+			stlplus::folder_delete(sQueryImgMatchDir, true);
 			continue;
 		}
 
@@ -491,45 +570,8 @@ int main(int argc, char **argv) {
 				<< " s\n";
 		cout << "Total time: " << (end - start) / getTickFrequency() << " s\n";
 
-		if (sOutputFolder.length() > 0) {
-			ofstream os(
-					stlplus::create_filespec(sOutputFolder,
-							stlplus::basename_part(sQueryImg), "json"));
-			if (os.is_open()) {
-
-				// set output format for matrix and vector
-				IOFormat matFormat(6, 0, ",", ",\n", "[", "]", "[", "]");
-				IOFormat vecFormat(6, 0, ",", ",\n", "", "", "[", "]");
-
-				// output json
-				os << "{" << endl;
-				os << "\t\"filename\": \"" << sQueryImg << "\"," << endl;
-				os << "\t\"sfm_data\": \"" << sSfM_data << "\"," << endl;
-				os << "\t\"matches_dir\": \"" << sMatchesDir << "\"," << endl;
-				os << "\t\"K\": " << K_.format(matFormat) << "," << endl;
-				os << "\t\"R\": " << R_.format(matFormat) << "," << endl;
-				os << "\t\"t\": " << t_out.format(vecFormat) << "," << endl;
-				os << "\t\"pair\": [";
-				for (vector<size_t>::const_iterator iterW = resection_data.vec_inliers.begin();
-						iterW != resection_data.vec_inliers.end(); ++iterW) {
-					pair<size_t, size_t> pairM = *(mapFeatTo3DFeat.begin()
-							+ *iterW);
-					os << "[" << pairM.first << "," << pairM.second << "]";
-					if (iterW + 1 != resection_data.vec_inliers.end()) {
-						os << ",";
-					}
-				}
-
-				os << "]" << endl;
-				os << "}" << endl;
-				os.close();
-			} else {
-				cerr << "cannot write out result to "
-						<< stlplus::create_filespec(sOutputFolder,
-								stlplus::basename_part(sQueryImg), "json")
-						<< endl;
-			}
-		}
+		saveResultJson(sOutputFolder, sQueryImg, sSfM_data, sMatchesDir, mapViewFeatTo3D,
+				resection_data, mapFeatTo3DFeat, K_, R_, t_, t_out);
 
 		// remove added image from sfm_data
 		sfm_data.views.erase(indQueryFile);
@@ -538,5 +580,8 @@ int main(int argc, char **argv) {
 		// if localization reach this part, it means a localization is found,
 		// hence we will localize locEvryNFrame frames after this frame
 		matchNextNFrame = locEvryNFrame - 1;
+
+		// delete query image match folder
+		stlplus::folder_delete(sQueryImgMatchDir, true);
 	}
 }

@@ -61,8 +61,8 @@ def copyOriginalFiles(inputDir, outputDir):
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Input","*","inputImg","*") + " " + os.path.join(outputDir,"Input","inputImg"))
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Input","*","csv","*") + " " + os.path.join(outputDir,"Input","csv"))
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Input","listbeacon.txt") + " " + os.path.join(outputDir,"Input"))
-    os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","*","matches","*.desc") + " " + os.path.join(outputDir,"Output","matches"))
-    os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","*","matches","*.feat") + " " + os.path.join(outputDir,"Output","matches"))
+    os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","final","Output","matches","*.desc") + " " + os.path.join(outputDir,"Output","matches"))
+    os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","final","Output","matches","*.feat") + " " + os.path.join(outputDir,"Output","matches"))
     os.system("cp --remove-destination " + FILE_COPY_OPTION + " " + os.path.join(inputDir,"Output","final","Output","matches","image_describer.txt") + " " + os.path.join(outputDir,"Output","matches"))
 
 #

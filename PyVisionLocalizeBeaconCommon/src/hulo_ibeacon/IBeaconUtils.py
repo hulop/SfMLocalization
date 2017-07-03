@@ -536,7 +536,7 @@ def exportBeaconDataForSfmImageFrames(csvdir, sfm_data_file, beacon_file, output
     for filename in sorted(os.listdir(csvdir)):
         
         # check csv file
-        if filename[-3:].lower()=="csv":
+        if filename[-11:].lower()=="_beacon.csv":
             infilename = os.path.join(csvdir, filename)   
         else:
             continue  

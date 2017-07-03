@@ -22,6 +22,7 @@
 	  "cflags_cc" : [ "-O0 -g3 -Wall -c -fmessage-length=0 -std=c++11 -fopenmp -fexceptions -DEIGEN_MPL2_ONLY" ],
 	  "cflags_cc!" : [ "-fno-rtti" ],
       "include_dirs": [
+					"<!(node -e \"require('nan')\")",
       					"/usr/local/include/openMVG_dependencies/cereal/include",
 	      				"/opt/opencv-3.0.0/include",
 						"/usr/include/eigen3",

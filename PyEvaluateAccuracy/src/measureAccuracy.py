@@ -58,6 +58,9 @@ def main():
     parser.add_argument('sfm_data_dir', action='store', nargs=None, const=None, \
                         default=None, type=str, choices=None, metavar=None, \
                         help='Directory path where OpenMVG sfm_data.json is located.')
+    parser.add_argument('test_dir', action='store', nargs=None, const=None, \
+                        default=None, type=str, choices=None, metavar=None, \
+                        help='Directory path where test images are located.')    
     parser.add_argument('log_file', action='store', nargs=None, const=None, \
                         default=None, type=str, choices=None, metavar=None, \
                         help='File path where summary log will be saved.')
@@ -78,6 +81,7 @@ def main():
     project_dir = args.project_dir
     matches_dir = args.matches_dir
     sfm_data_dir = args.sfm_data_dir
+    test_dir = args.test_dir
     log_file = args.log_file
     hist_file = args.hist_file
     USE_BOW = args.bow
@@ -90,7 +94,6 @@ def main():
     PCA_FILE = os.path.join(matches_dir, "PCAfile.yml")
     SFM_BEACON_FILE = sfm_data_dir + "/beacon.txt"
     REF_FOLDER = project_dir + "/Ref"
-    TEST_FOLDER = project_dir + "/Test"
     
     if USE_BOW and not os.path.isfile(BOW_FILE):
         print "Use BOW flag is set, but cannot find BOW model file"
@@ -195,10 +198,10 @@ def main():
                                     
             countLocFrame = countLocFrame + 1
             with open(os.path.join(REF_FOLDER_LOC,filename)) as locJson:
-                #print os.path.join(sfm_locOut,filename)
                 locJsonDict = json.load(locJson)
-                loc = locJsonDict["t"]
-                fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )  
+                if "t" in locJsonDict:
+                    loc = locJsonDict["t"]
+                    fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )  
         
         fileLoc.close() 
         
@@ -221,9 +224,10 @@ def main():
                 
                 # if file exist in map, add to matrix
                 if imgLocName in mapNameLocRef:
-                    locCoor.append(jsonLoc["t"])
-                    worldCoor.append(mapNameLocRef[imgLocName])
-                    countLoc = countLoc + 1
+                    if "t" in jsonLoc:
+                        locCoor.append(jsonLoc["t"])
+                        worldCoor.append(mapNameLocRef[imgLocName])
+                        countLoc = countLoc + 1
         
         print "From " + str(len(mapNameLocRef)) + " reference images, " + str(countLoc) + " images has been localized."
         
@@ -257,7 +261,7 @@ def main():
     PlyUtis.saveStructurePly(os.path.join(sfm_data_dir,"sfm_data_global.json"), os.path.join(sfm_data_dir,"colorized_global_structure.ply"))
     
     # start localize test
-    TEST_FOLDER_LOC = os.path.join(TEST_FOLDER,"loc")
+    TEST_FOLDER_LOC = os.path.join(test_dir,"loc")
     if not os.path.isfile(os.path.join(TEST_FOLDER_LOC,"center.txt")):
         
         # localize test images
@@ -270,7 +274,7 @@ def main():
             guideMatchOption = " -gm"
         if USE_BOW and not USE_BEACON:
             os.system(reconstructParam.LOCALIZE_PROJECT_PATH + \
-                      " " + os.path.join(TEST_FOLDER,"inputImg") + \
+                      " " + os.path.join(test_dir,"inputImg") + \
                       " " + sfm_data_dir + \
                       " " + matches_dir + \
                       " " + TEST_FOLDER_LOC + \
@@ -282,14 +286,14 @@ def main():
                       guideMatchOption)
         elif not USE_BOW and USE_BEACON:
             os.system(reconstructIBeaconParam.LOCALIZE_PROJECT_PATH + \
-                      " " + os.path.join(TEST_FOLDER,"inputImg") + \
+                      " " + os.path.join(test_dir,"inputImg") + \
                       " " + sfm_data_dir + \
                       " " + matches_dir + \
                       " " + TEST_FOLDER_LOC + \
                       " -f=" + str(localizeParam.locFeatDistRatio) + \
                       " -r=" + str(localizeParam.locRansacRound) + \
                       " -b=" + SFM_BEACON_FILE + \
-                      " -e=" + os.path.join(TEST_FOLDER,"csv") + \
+                      " -e=" + os.path.join(test_dir,"csv") + \
                       " -k=" + str(localizeIBeaconParam.locKNNnum) + \
                       " -c=" + str(localizeIBeaconParam.coocThres) + \
                       " -v=" + str(localizeIBeaconParam.locSkipSelKNN) + \
@@ -297,14 +301,14 @@ def main():
                       guideMatchOption)
         elif USE_BOW and USE_BEACON:
             os.system(reconstructIBeaconParam.LOCALIZE_PROJECT_PATH + \
-                      " " + os.path.join(TEST_FOLDER,"inputImg") + \
+                      " " + os.path.join(test_dir,"inputImg") + \
                       " " + sfm_data_dir + \
                       " " + matches_dir + \
                       " " + TEST_FOLDER_LOC + \
                       " -f=" + str(localizeParam.locFeatDistRatio) + \
                       " -r=" + str(localizeParam.locRansacRound) + \
                       " -b=" + SFM_BEACON_FILE + \
-                      " -e=" + os.path.join(TEST_FOLDER,"csv") + \
+                      " -e=" + os.path.join(test_dir,"csv") + \
                       " -k=" + str(localizeIBeaconParam.locKNNnum) + \
                       " -c=" + str(localizeIBeaconParam.coocThres) + \
                       " -v=" + str(localizeIBeaconParam.locSkipSelKNN) + \
@@ -315,7 +319,7 @@ def main():
                       guideMatchOption)
         else:
             os.system(reconstructParam.LOCALIZE_PROJECT_PATH + \
-                      " " + os.path.join(TEST_FOLDER,"inputImg") + \
+                      " " + os.path.join(test_dir,"inputImg") + \
                       " " + sfm_data_dir + \
                       " " + matches_dir + \
                       " " + TEST_FOLDER_LOC + \
@@ -333,15 +337,15 @@ def main():
                                         
             countLocFrame = countLocFrame + 1
             with open(os.path.join(TEST_FOLDER_LOC,filename)) as locJson:
-                #print os.path.join(sfm_locOut,filename)
                 locJsonDict = json.load(locJson)
-                loc = locJsonDict["t"]
-                fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )  
+                if "t" in locJsonDict:
+                    loc = locJsonDict["t"]
+                    fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )  
         
         fileLoc.close() 
     
     # read test data
-    mapNameLocTest = FileUtils.loadImageLocationListTxt(os.path.join(TEST_FOLDER,"testcoor.txt"))
+    mapNameLocTest = FileUtils.loadImageLocationListTxt(os.path.join(test_dir,"testcoor.txt"))
     
     # read localized json file and find its matching world coordinate
     worldCoorTest = []
@@ -359,9 +363,10 @@ def main():
             
             # if file exist in map, add to matrix
             if imgLocName in mapNameLocTest:
-                locCoorTest.append(jsonLoc["t"])
-                worldCoorTest.append(mapNameLocTest[imgLocName])
-                countLocTest = countLocTest + 1
+                if "t" in jsonLoc:
+                    locCoorTest.append(jsonLoc["t"])
+                    worldCoorTest.append(mapNameLocTest[imgLocName])
+                    countLocTest = countLocTest + 1
             
     # transform loc coordinate to world coordinate
     print "From " + str(len(mapNameLocTest)) + " test images, " + str(countLocTest) + " images has been localized."
@@ -416,14 +421,16 @@ def main():
             
             # if file exist in map
             if imgLocName in mapNameLocTest:
-                jsonLoc["t_relative"] = jsonLoc["t"]
-                jsonLoc["R_relative"] = jsonLoc["R"]
-                jsonLoc["t"] = np.dot(Amat,np.concatenate([jsonLoc["t"],[1]])).tolist()
-                jsonLoc["R"] = np.dot(jsonLoc["R"],Amat[:, 0:3].T).tolist()
+                if "t" in jsonLoc:
+                    jsonLoc["t_relative"] = jsonLoc["t"]
+                    jsonLoc["R_relative"] = jsonLoc["R"]
+                    jsonLoc["t"] = np.dot(Amat,np.concatenate([jsonLoc["t"],[1]])).tolist()
+                    jsonLoc["R"] = np.dot(jsonLoc["R"],Amat[:, 0:3].T).tolist()
+                    
+                    locGlobalPoints.append(jsonLoc["t"])
+                
                 jsonLoc["groundtruth"] = mapNameLocTest[imgLocName]
                 locGlobalJsonObj["locGlobal"].append(jsonLoc)
-                
-                locGlobalPoints.append(jsonLoc["t"])
     with open(os.path.join(TEST_FOLDER_LOC,"loc_global.json"),"w") as jsonfile:
         json.dump(locGlobalJsonObj, jsonfile)
     

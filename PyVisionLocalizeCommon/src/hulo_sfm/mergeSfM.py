@@ -59,8 +59,9 @@ def readMatch(locFolder):
             continue
         
         jsondata = FileUtils.loadjson(os.path.join(locFolder, filename))
-        imgname.append(os.path.basename(jsondata["filename"]))
-        matchlist.append(jsondata["pair"])
+        if "t" in jsondata:
+            imgname.append(os.path.basename(jsondata["filename"]))
+            matchlist.append(jsondata["pair"])
         
     return imgname, matchlist
 
@@ -425,14 +426,20 @@ def transform_sfm_data(sfm_data, M):
                 
         # transform center
         vCenter = np.asarray(sfm_data['extrinsics'][extKey]['value']['center'])
-        nvCenter = np.dot(M[:,0:3],vCenter) + M[:,3]
-        sfm_data['extrinsics'][extKey]['value']['center'] = np.ndarray.tolist(nvCenter)
+        nvCenter = np.dot(M[:,0:3],vCenter).flatten() + M[:,3].flatten()
+        if len(nvCenter.shape)==1:
+            sfm_data['extrinsics'][extKey]['value']['center'] = [nvCenter[0],nvCenter[1],nvCenter[2]]
+        else:
+            sfm_data['extrinsics'][extKey]['value']['center'] = [nvCenter[0,0],nvCenter[0,1],nvCenter[0,2]]
         
     for strKey in range(0,len(sfm_data['structure'])):
         # transform 3d coordinate
         X = np.asarray(sfm_data['structure'][strKey]['value']['X'])
-        nX = np.dot(M[:,0:3],X) + M[:,3]
-        sfm_data['structure'][strKey]['value']['X'] = np.ndarray.tolist(nX)
+        nX = np.dot(M[:,0:3],X).flatten() + M[:,3].flatten()
+        if len(nX.shape)==1:
+            sfm_data['structure'][strKey]['value']['X'] = [nX[0],nX[1],nX[2]]
+        else:
+            sfm_data['structure'][strKey]['value']['X'] = [nX[0,0],nX[0,1],nX[0,2]]
 
 # merge sfm_dataB into sfm_dataA with M as transformation matrix
 # inlierMapBA maps key key of 3D pt of model B to that of model A
@@ -630,8 +637,9 @@ def modelMergeCheckLocal(sfm_data_path, sfm_locOut, medThres):
                 continue
         
         locJsonDict = FileUtils.loadjson(os.path.join(sfm_locOut,filename))
-        imgName.append(os.path.basename(locJsonDict["filename"]))
-        imgLoc.append(locJsonDict["t"])
+        if "t" in locJsonDict:
+            imgName.append(os.path.basename(locJsonDict["filename"]))
+            imgLoc.append(locJsonDict["t"])
         
     imgID = imgnameToViewID(imgName, sfm_data)    
     imgSfMLoc = get3DViewloc(sfm_data, imgID)

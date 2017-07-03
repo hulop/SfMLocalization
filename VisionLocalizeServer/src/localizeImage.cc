@@ -20,6 +20,7 @@
 * THE SOFTWARE.
 *******************************************************************************/
 
+#include <nan.h>
 #include <node.h>
 #include <node_buffer.h>
 #include <v8.h>
@@ -36,6 +37,7 @@
 
 using namespace std;
 using namespace v8;
+using namespace Nan;
 
 std::map<std::string, std::map<std::string, LocalizeEngine> > sfmDataDirMap;
 std::map<std::string, std::map<std::string, LocalizeEngine> > matchDirMap;
@@ -122,7 +124,11 @@ Local<Array> execLocalizeImage(const std::string& userID, const std::string& kMa
 		cout << "successed to create working folder : " << workingDir << endl;
 	} else {
 		cout << "failed to create working folder : " << workingDir << endl;
+#if NODE_MAJOR_VERSION>0
+		return New<Array>(0);
+#else
 		return Array::New(0);
+#endif
 	}
 
 	cv::Mat mapx, mapy, intrinsicK, intrinsicDist, newCameraMat;
@@ -190,45 +196,117 @@ Local<Array> execLocalizeImage(const std::string& userID, const std::string& kMa
 
 	// return result
 	if (pos.size()==12) {
+#if NODE_MAJOR_VERSION>0
+		Local<Array> result = New<Array>(5);
+#else
 		Local<Array> result = Array::New(5);
+#endif
 
+#if NODE_MAJOR_VERSION>0
+		Local<Array> posArray = New<Array>(12);
+#else
 		Local<Array> posArray = Array::New(12);
+#endif
 		for (int i=0; i<12; i++) {
+#if NODE_MAJOR_VERSION>0
+			posArray->Set(New<Number>(i), New<Number>(pos[i]));
+#else
 			posArray->Set(Number::New(i), Number::New(pos[i]));
+#endif
 		}
+#if NODE_MAJOR_VERSION>0
+		result->Set(New<Number>(0), posArray);
+#else
 		result->Set(Number::New(0), posArray);
+#endif
 
 		if (bReturnKeypoints) {
+#if NODE_MAJOR_VERSION>0
+		    Local<Array> points2dArray = New<Array>(points2D.rows);
+#else
 			Local<Array> points2dArray = Array::New(points2D.rows);
+#endif
 			for (int i=0; i<points2D.rows; i++) {
+#if NODE_MAJOR_VERSION>0
+			 	Local<Array> points2dRow = New<Array>(points2D.cols);
+#else
 				Local<Array> points2dRow = Array::New(points2D.cols);
+#endif
 				for (int j=0; j<points2D.cols; j++) {
 					if (scaleImage==1.0) {
+#if NODE_MAJOR_VERSION>0
+						points2dRow->Set(New<Number>(j), New<Number>(points2D.at<double>(i,j)));
+#else
 						points2dRow->Set(Number::New(j), Number::New(points2D.at<double>(i,j)));
+#endif
 					} else {
+#if NODE_MAJOR_VERSION>0
+						points2dRow->Set(New<Number>(j), New<Number>(points2D.at<double>(i,j)/scaleImage));
+#else
 						points2dRow->Set(Number::New(j), Number::New(points2D.at<double>(i,j)/scaleImage));
+#endif
 					}
 				}
 				cout << endl;
+#if NODE_MAJOR_VERSION>0
+				points2dArray->Set(New<Number>(i), points2dRow);
+#else
 				points2dArray->Set(Number::New(i), points2dRow);
+#endif
 			}
+#if NODE_MAJOR_VERSION>0
+			result->Set(New<Number>(1), points2dArray);
+#else
 			result->Set(Number::New(1), points2dArray);
+#endif
 
+#if NODE_MAJOR_VERSION>0
+			Local<Array> points3dArray = New<Array>(points3D.rows);
+#else
 			Local<Array> points3dArray = Array::New(points3D.rows);
+#endif			
 			for (int i=0; i<points3D.rows; i++) {
+#if NODE_MAJOR_VERSION>0
+				Local<Array> points3dRow = New<Array>(points3D.cols);
+#else
 				Local<Array> points3dRow = Array::New(points3D.cols);
+#endif
 				for (int j=0; j<points3D.cols; j++) {
+#if NODE_MAJOR_VERSION>0
+					points3dRow->Set(New<Number>(j), New<Number>(points3D.at<double>(i,j)));
+#else
 					points3dRow->Set(Number::New(j), Number::New(points3D.at<double>(i,j)));
+#endif
 				}
+#if NODE_MAJOR_VERSION>0
+				points3dArray->Set(New<Number>(i), points3dRow);
+#else
 				points3dArray->Set(Number::New(i), points3dRow);
+#endif
 			}
+#if NODE_MAJOR_VERSION>0
+			result->Set(New<Number>(2), points3dArray);
+#else
 			result->Set(Number::New(2), points3dArray);
+#endif
 
+#if NODE_MAJOR_VERSION>0
+			Local<Array> inlierArray = New<Array>(pointsInlier.size());
+#else
 			Local<Array> inlierArray = Array::New(pointsInlier.size());
+#endif
 			for (int i=0; i<pointsInlier.size(); i++) {
+#if NODE_MAJOR_VERSION>0
+				inlierArray->Set(New<Number>(i), New<Number>(pointsInlier[i]));
+#else
 				inlierArray->Set(Number::New(i), Number::New(pointsInlier[i]));
+#endif
 			}
+#if NODE_MAJOR_VERSION>0
+			result->Set(New<Number>(3), inlierArray);
+#else
 			result->Set(Number::New(3), inlierArray);
+#endif
 		}
 		if (bReturnTime) {
 			double timeOthers = (endLocalizeTime - startLocalizeTime) / cv::getTickFrequency();
@@ -236,313 +314,344 @@ Local<Array> execLocalizeImage(const std::string& userID, const std::string& kMa
 				timeOthers -= times[i];
 			}
 
+#if NODE_MAJOR_VERSION>0
+			Local<Array> timesArray = New<Array>(times.size()+1);
+#else
 			Local<Array> timesArray = Array::New(times.size()+1);
+#endif
 			for (int i=0; i<times.size(); i++) {
+#if NODE_MAJOR_VERSION>0
+				timesArray->Set(New<Number>(i), New<Number>(times[i]));
+#else
 				timesArray->Set(Number::New(i), Number::New(times[i]));
+#endif
 			}
+#if NODE_MAJOR_VERSION>0
+			timesArray->Set(New<Number>(times.size()), New<Number>(timeOthers));
+#else
 			timesArray->Set(Number::New(times.size()), Number::New(timeOthers));
+#endif
 
+#if NODE_MAJOR_VERSION>0
+			result->Set(New<Number>(4), timesArray);
+#else
 			result->Set(Number::New(4), timesArray);
+#endif
 		}
 		return result;
 	} else {
+#if NODE_MAJOR_VERSION>0
+		return New<Array>(0);
+#else
 		return Array::New(0);
+#endif
 	}
 }
 
-Handle<Value> LocalizeImageBuffer(const Arguments& args) {
-	HandleScope scope;
-
-	if (args.Length() != 11 && args.Length() != 13) {
-		ThrowException(
-				Exception::TypeError(String::New("Wrong number of arguments")));
-		return scope.Close(Undefined());
+NAN_METHOD(LocalizeImageBuffer) {
+	if (info.Length() != 11 && info.Length() != 13) {
+	  	Nan::ThrowError("Wrong number of arguments");
+		return;
 	}
-	if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()
-		|| !args[3]->IsNumber() || !args[4]->IsString() || !args[5]->IsString()
-		|| !args[6]->IsString() || !args[7]->IsString() || !args[8]->IsBoolean()
-		|| !args[9]->IsBoolean() || !args[10]->IsObject()) {
-		ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		return scope.Close(Undefined());
+	if (!info[0]->IsString() || !info[1]->IsString() || !info[2]->IsString()
+		|| !info[3]->IsNumber() || !info[4]->IsString() || !info[5]->IsString()
+		|| !info[6]->IsString() || !info[7]->IsString() || !info[8]->IsBoolean()
+		|| !info[9]->IsBoolean() || !info[10]->IsObject()) {
+	 	Nan::ThrowError("Wrong arguments");
+		return;
 	}
 
-	String::Utf8Value userID(args[0]->ToString());
+	String::Utf8Value userID(info[0]->ToString());
 	const char* userIDChar = (const char*)(*userID);
 
-	String::Utf8Value kMatFile(args[1]->ToString());
+	String::Utf8Value kMatFile(info[1]->ToString());
 	const char* kMatFileChar = (const char*)(*kMatFile);
 
-	String::Utf8Value distMatFile(args[2]->ToString());
+	String::Utf8Value distMatFile(info[2]->ToString());
 	const char* distMatFileChar = (const char*)(*distMatFile);
 
-	double scaleImage = args[3]->NumberValue();
+	double scaleImage = info[3]->NumberValue();
 
-	String::Utf8Value mapID(args[4]->ToString());
+	String::Utf8Value mapID(info[4]->ToString());
 	const char* mapIDChar = (const char*)(*mapID);
 
-	String::Utf8Value sfmDataDir(args[5]->ToString());
+	String::Utf8Value sfmDataDir(info[5]->ToString());
 	const char* sfmDataDirChar = (const char*)(*sfmDataDir);
 
-	String::Utf8Value matchDir(args[6]->ToString());
+	String::Utf8Value matchDir(info[6]->ToString());
 	const char* matchDirChar = (const char*)(*matchDir);
 
-	String::Utf8Value aMatFile(args[7]->ToString());
+	String::Utf8Value aMatFile(info[7]->ToString());
 	const char* aMatFileChar = (const char*)(*aMatFile);
 
-	bool bReturnKeypoints = args[8]->ToBoolean()->Value();
-	bool bReturnTime = args[9]->ToBoolean()->Value();
+	bool bReturnKeypoints = info[8]->ToBoolean()->Value();
+	bool bReturnTime = info[9]->ToBoolean()->Value();
 
-	Local<Object> imageBuffer = args[10]->ToObject();
+	Local<Object> imageBuffer = info[10]->ToObject();
 	char* imageData    = node::Buffer::Data(imageBuffer);
 	size_t imageDataLen = node::Buffer::Length(imageBuffer);
 	cv::Mat image = cv::imdecode(cv::_InputArray(imageData, imageDataLen), cv::IMREAD_COLOR);
 	if (image.empty() || image.rows==0 || image.cols==0) {
-		ThrowException(Exception::TypeError(String::New("Input image is empty")));
-		return scope.Close(Undefined());
+	  	Nan::ThrowError("Input image is empty");
+		return;
 	}
 
 	Local<Array> result;
-	if (args.Length()==11) {
+	if (info.Length()==11) {
 		result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
 					std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
 					scaleImage, image, "", bReturnKeypoints, bReturnTime);
 	} else {
-		Local<Array> center = Array::Cast(*args[11]);
+#if NODE_MAJOR_VERSION>0
+	 	Local<Array> center = Local<Array>::Cast(info[11]);
+#else
+	 	Local<Array> center = Array::Cast(*info[11]);
+#endif
 		std::vector<double> centerVec;
-	    for(int i = 0; i < center->Length(); i++) {
-	    	centerVec.push_back(center->Get(i)->NumberValue());
-	    }
-	    double radius = args[12]->NumberValue();
-	    result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
-	    			std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
-					scaleImage, image, "", bReturnKeypoints, bReturnTime, centerVec, radius);
+	        for(int i = 0; i < center->Length(); i++) {
+		    centerVec.push_back(center->Get(i)->NumberValue());
+		}
+		double radius = info[12]->NumberValue();
+		result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
+					   std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
+					   scaleImage, image, "", bReturnKeypoints, bReturnTime, centerVec, radius);
 	}
-	return scope.Close(result);
+	info.GetReturnValue().Set(result);
 }
 
-Handle<Value> LocalizeImagePath(const Arguments& args) {
-	HandleScope scope;
-
-	if (args.Length() != 11 && args.Length() != 13) {
-		ThrowException(
-				Exception::TypeError(String::New("Wrong number of arguments")));
-		return scope.Close(Undefined());
+NAN_METHOD(LocalizeImagePath) {
+	if (info.Length() != 11 && info.Length() != 13) {
+	  	Nan::ThrowError("Wrong number of arguments");
+		return;
 	}
-	if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()
-		|| !args[3]->IsNumber() || !args[4]->IsString() || !args[5]->IsString()
-		|| !args[6]->IsString() || !args[7]->IsString() || !args[8]->IsBoolean()
-		|| !args[9]->IsBoolean() || !args[10]->IsString()) {
-		ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		return scope.Close(Undefined());
+	if (!info[0]->IsString() || !info[1]->IsString() || !info[2]->IsString()
+		|| !info[3]->IsNumber() || !info[4]->IsString() || !info[5]->IsString()
+		|| !info[6]->IsString() || !info[7]->IsString() || !info[8]->IsBoolean()
+		|| !info[9]->IsBoolean() || !info[10]->IsString()) {
+	 	Nan::ThrowError("Wrong arguments");
+		return;
 	}
 
-	String::Utf8Value userID(args[0]->ToString());
+	String::Utf8Value userID(info[0]->ToString());
 	const char* userIDChar = (const char*)(*userID);
 
-	String::Utf8Value kMatFile(args[1]->ToString());
+	String::Utf8Value kMatFile(info[1]->ToString());
 	const char* kMatFileChar = (const char*)(*kMatFile);
 
-	String::Utf8Value distMatFile(args[2]->ToString());
+	String::Utf8Value distMatFile(info[2]->ToString());
 	const char* distMatFileChar = (const char*)(*distMatFile);
 
-	double scaleImage = args[3]->NumberValue();
+	double scaleImage = info[3]->NumberValue();
 
-	String::Utf8Value mapID(args[4]->ToString());
+	String::Utf8Value mapID(info[4]->ToString());
 	const char* mapIDChar = (const char*)(*mapID);
 
-	String::Utf8Value sfmDataDir(args[5]->ToString());
+	String::Utf8Value sfmDataDir(info[5]->ToString());
 	const char* sfmDataDirChar = (const char*)(*sfmDataDir);
 
-	String::Utf8Value matchDir(args[6]->ToString());
+	String::Utf8Value matchDir(info[6]->ToString());
 	const char* matchDirChar = (const char*)(*matchDir);
 
-	String::Utf8Value aMatFile(args[7]->ToString());
+	String::Utf8Value aMatFile(info[7]->ToString());
 	const char* aMatFileChar = (const char*)(*aMatFile);
 
-	bool bReturnKeypoints = args[8]->ToBoolean()->Value();
-	bool bReturnTime = args[9]->ToBoolean()->Value();
+	bool bReturnKeypoints = info[8]->ToBoolean()->Value();
+	bool bReturnTime = info[9]->ToBoolean()->Value();
 
-	String::Utf8Value imagePath(args[10]->ToString());
+	String::Utf8Value imagePath(info[10]->ToString());
 	const char* imagePathChar = (const char*)(*imagePath);
 	cv::Mat image = cv::imread(std::string(imagePathChar), cv::IMREAD_COLOR);
 	if (image.empty() || image.rows==0 || image.cols==0) {
-		ThrowException(Exception::TypeError(String::New("Input image is empty")));
-		return scope.Close(Undefined());
+	   	Nan::ThrowError("Input image is empty");
+		return;
 	}
 
 	Local<Array> result;
-	if (args.Length() == 11) {
+	if (info.Length() == 11) {
 		result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
 					std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
 					scaleImage, image, "", bReturnKeypoints, bReturnTime);
 	} else {
-		Local<Array> center = Array::Cast(*args[11]);
+#if NODE_MAJOR_VERSION>0
+	  	Local<Array> center = Local<Array>::Cast(info[11]);
+#else
+		Local<Array> center = Array::Cast(*info[11]);
+#endif
 		std::vector<double> centerVec;
 	    for(int i = 0; i < center->Length(); i++) {
 	    	centerVec.push_back(center->Get(i)->NumberValue());
 	    }
-	    double radius = args[12]->NumberValue();
+	    double radius = info[12]->NumberValue();
 	    result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
 	    			std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
 					scaleImage, image, "", bReturnKeypoints, bReturnTime, centerVec, radius);
 	}
-	return scope.Close(result);
+	info.GetReturnValue().Set(result);
 }
 
-Handle<Value> LocalizeImageBufferBeacon(const Arguments& args) {
-	HandleScope scope;
-
-	if (args.Length() != 12 && args.Length() != 14) {
-		ThrowException(
-				Exception::TypeError(String::New("Wrong number of arguments")));
-		return scope.Close(Undefined());
+NAN_METHOD(LocalizeImageBufferBeacon) {
+	if (info.Length() != 12 && info.Length() != 14) {
+	   	Nan::ThrowError("Wrong number of arguments");
+		return;
 	}
-	if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()
-		|| !args[3]->IsNumber() || !args[4]->IsString() || !args[5]->IsString()
-		|| !args[6]->IsString() || !args[7]->IsString() || !args[8]->IsBoolean()
-		|| !args[9]->IsBoolean() || !args[10]->IsObject() || !args[11]->IsString()) {
-		ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		return scope.Close(Undefined());
+	if (!info[0]->IsString() || !info[1]->IsString() || !info[2]->IsString()
+		|| !info[3]->IsNumber() || !info[4]->IsString() || !info[5]->IsString()
+		|| !info[6]->IsString() || !info[7]->IsString() || !info[8]->IsBoolean()
+		|| !info[9]->IsBoolean() || !info[10]->IsObject() || !info[11]->IsString()) {
+	   	Nan::ThrowError("Wrong arguments");
+		return;
 	}
 
-	String::Utf8Value userID(args[0]->ToString());
+	String::Utf8Value userID(info[0]->ToString());
 	const char* userIDChar = (const char*)(*userID);
 
-	String::Utf8Value kMatFile(args[1]->ToString());
+	String::Utf8Value kMatFile(info[1]->ToString());
 	const char* kMatFileChar = (const char*)(*kMatFile);
 
-	String::Utf8Value distMatFile(args[2]->ToString());
+	String::Utf8Value distMatFile(info[2]->ToString());
 	const char* distMatFileChar = (const char*)(*distMatFile);
 
-	double scaleImage = args[3]->NumberValue();
+	double scaleImage = info[3]->NumberValue();
 
-	String::Utf8Value mapID(args[4]->ToString());
+	String::Utf8Value mapID(info[4]->ToString());
 	const char* mapIDChar = (const char*)(*mapID);
 
-	String::Utf8Value sfmDataDir(args[5]->ToString());
+	String::Utf8Value sfmDataDir(info[5]->ToString());
 	const char* sfmDataDirChar = (const char*)(*sfmDataDir);
 
-	String::Utf8Value matchDir(args[6]->ToString());
+	String::Utf8Value matchDir(info[6]->ToString());
 	const char* matchDirChar = (const char*)(*matchDir);
 
-	String::Utf8Value aMatFile(args[7]->ToString());
+	String::Utf8Value aMatFile(info[7]->ToString());
 	const char* aMatFileChar = (const char*)(*aMatFile);
 
-	bool bReturnKeypoints = args[8]->ToBoolean()->Value();
-	bool bReturnTime = args[9]->ToBoolean()->Value();
+	bool bReturnKeypoints = info[8]->ToBoolean()->Value();
+	bool bReturnTime = info[9]->ToBoolean()->Value();
 
-	Local<Object> imageBuffer = args[10]->ToObject();
+	Local<Object> imageBuffer = info[10]->ToObject();
 	char* imageData    = node::Buffer::Data(imageBuffer);
 	size_t imageDataLen = node::Buffer::Length(imageBuffer);
 	cv::Mat image = cv::imdecode(cv::_InputArray(imageData, imageDataLen), cv::IMREAD_COLOR);
 	if (image.empty() || image.rows==0 || image.cols==0) {
-		ThrowException(Exception::TypeError(String::New("Input image is empty")));
-		return scope.Close(Undefined());
+	 	Nan::ThrowError("Input image is empty");
+		return;
 	}
 
-	String::Utf8Value beaconStr(args[11]->ToString());
+	String::Utf8Value beaconStr(info[11]->ToString());
 	const char* beaconStrChar = (const char*)(*beaconStr);
 
 	Local<Array> result;
-	if (args.Length()==12) {
+	if (info.Length()==12) {
 		result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
 					std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
 					scaleImage, image, std::string(beaconStrChar), bReturnKeypoints, bReturnTime);
 	} else {
-		Local<Array> center = Array::Cast(*args[12]);
+#if NODE_MAJOR_VERSION>0
+	   	Local<Array> center = Local<Array>::Cast(info[12]);
+#else
+		Local<Array> center = Array::Cast(*info[12]);
+#endif
 		std::vector<double> centerVec;
 	    for(int i = 0; i < center->Length(); i++) {
 	    	centerVec.push_back(center->Get(i)->NumberValue());
 	    }
-	    double radius = args[13]->NumberValue();
+	    double radius = info[13]->NumberValue();
 	    result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
 	    			std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
 					scaleImage, image, std::string(beaconStrChar), bReturnKeypoints, bReturnTime, centerVec, radius);
 	}
-	return scope.Close(result);
+	info.GetReturnValue().Set(result);
 }
 
-Handle<Value> LocalizeImagePathBeacon(const Arguments& args) {
-	HandleScope scope;
-
-	if (args.Length() != 12 && args.Length() != 14) {
-		ThrowException(
-				Exception::TypeError(String::New("Wrong number of arguments")));
-		return scope.Close(Undefined());
+NAN_METHOD(LocalizeImagePathBeacon) {
+	if (info.Length() != 12 && info.Length() != 14) {
+	 	Nan::ThrowError("Wrong number of arguments");
+		return;
 	}
-	if (!args[0]->IsString() || !args[1]->IsString() || !args[2]->IsString()
-		|| !args[3]->IsNumber() || !args[4]->IsString() || !args[5]->IsString()
-		|| !args[6]->IsString() || !args[7]->IsString() || !args[8]->IsBoolean()
-		|| !args[9]->IsBoolean() || !args[10]->IsString() || !args[11]->IsString()) {
-		ThrowException(Exception::TypeError(String::New("Wrong arguments")));
-		return scope.Close(Undefined());
+	if (!info[0]->IsString() || !info[1]->IsString() || !info[2]->IsString()
+		|| !info[3]->IsNumber() || !info[4]->IsString() || !info[5]->IsString()
+		|| !info[6]->IsString() || !info[7]->IsString() || !info[8]->IsBoolean()
+		|| !info[9]->IsBoolean() || !info[10]->IsString() || !info[11]->IsString()) {
+	  	Nan::ThrowError("Wrong arguments");
+		return;
 	}
 
-	String::Utf8Value userID(args[0]->ToString());
+	String::Utf8Value userID(info[0]->ToString());
 	const char* userIDChar = (const char*)(*userID);
 
-	String::Utf8Value kMatFile(args[1]->ToString());
+	String::Utf8Value kMatFile(info[1]->ToString());
 	const char* kMatFileChar = (const char*)(*kMatFile);
 
-	String::Utf8Value distMatFile(args[2]->ToString());
+	String::Utf8Value distMatFile(info[2]->ToString());
 	const char* distMatFileChar = (const char*)(*distMatFile);
 
-	double scaleImage = args[3]->NumberValue();
+	double scaleImage = info[3]->NumberValue();
 
-	String::Utf8Value mapID(args[4]->ToString());
+	String::Utf8Value mapID(info[4]->ToString());
 	const char* mapIDChar = (const char*)(*mapID);
 
-	String::Utf8Value sfmDataDir(args[5]->ToString());
+	String::Utf8Value sfmDataDir(info[5]->ToString());
 	const char* sfmDataDirChar = (const char*)(*sfmDataDir);
 
-	String::Utf8Value matchDir(args[6]->ToString());
+	String::Utf8Value matchDir(info[6]->ToString());
 	const char* matchDirChar = (const char*)(*matchDir);
 
-	String::Utf8Value aMatFile(args[7]->ToString());
+	String::Utf8Value aMatFile(info[7]->ToString());
 	const char* aMatFileChar = (const char*)(*aMatFile);
 
-	bool bReturnKeypoints = args[8]->ToBoolean()->Value();
-	bool bReturnTime = args[9]->ToBoolean()->Value();
+	bool bReturnKeypoints = info[8]->ToBoolean()->Value();
+	bool bReturnTime = info[9]->ToBoolean()->Value();
 
-	String::Utf8Value imagePath(args[10]->ToString());
+	String::Utf8Value imagePath(info[10]->ToString());
 	const char* imagePathChar = (const char*)(*imagePath);
 	cv::Mat image = cv::imread(std::string(imagePathChar), cv::IMREAD_COLOR);
 	if (image.empty() || image.rows==0 || image.cols==0) {
-		ThrowException(Exception::TypeError(String::New("Input image is empty")));
-		return scope.Close(Undefined());
+	 	Nan::ThrowError("Input image is empty");
+		return;
 	}
 
-	String::Utf8Value beaconStr(args[11]->ToString());
+	String::Utf8Value beaconStr(info[11]->ToString());
 	const char* beaconStrChar = (const char*)(*beaconStr);
 
 	Local<Array> result;
-	if (args.Length() == 12) {
-		result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
-					std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
-					scaleImage, image, std::string(beaconStrChar), bReturnKeypoints, bReturnTime);
+	if (info.Length() == 12) {
+	    result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
+				       std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
+				       scaleImage, image, std::string(beaconStrChar), bReturnKeypoints, bReturnTime);
 	} else {
-		Local<Array> center = Array::Cast(*args[12]);
-		std::vector<double> centerVec;
+#if NODE_MAJOR_VERSION>0
+	    Local<Array> center = Local<Array>::Cast(info[12]);
+#else
+	    Local<Array> center = Array::Cast(*info[12]);
+#endif
+	    std::vector<double> centerVec;
 	    for(int i = 0; i < center->Length(); i++) {
 	    	centerVec.push_back(center->Get(i)->NumberValue());
 	    }
-	    double radius = args[13]->NumberValue();
+	    double radius = info[13]->NumberValue();
 	    result = execLocalizeImage(std::string(userIDChar), std::string(kMatFileChar), std::string(distMatFileChar),
 	    			std::string(mapIDChar), std::string(sfmDataDirChar), std::string(matchDirChar), std::string(aMatFileChar),
 					scaleImage, image, std::string(beaconStrChar), bReturnKeypoints, bReturnTime, centerVec, radius);
 	}
-	return scope.Close(result);
+	info.GetReturnValue().Set(result);
 }
 
-void Init(Handle<Object> exports) {
-	exports->Set(String::NewSymbol("localizeImageBuffer"),
-			FunctionTemplate::New(LocalizeImageBuffer)->GetFunction());
-	exports->Set(String::NewSymbol("localizeImagePath"),
-			FunctionTemplate::New(LocalizeImagePath)->GetFunction());
-	exports->Set(String::NewSymbol("localizeImageBufferBeacon"),
-			FunctionTemplate::New(LocalizeImageBufferBeacon)->GetFunction());
-	exports->Set(String::NewSymbol("localizeImagePathBeacon"),
-			FunctionTemplate::New(LocalizeImagePathBeacon)->GetFunction());
+NAN_MODULE_INIT(Init) {
+#if NODE_MAJOR_VERSION>0
+  	Nan::Set(target, New<String>("localizeImageBuffer").ToLocalChecked(),
+  			GetFunction(New<FunctionTemplate>(LocalizeImageBuffer)).ToLocalChecked());
+	Nan::Set(target, New<String>("localizeImagePath").ToLocalChecked(),
+			GetFunction(New<FunctionTemplate>(LocalizeImagePath)).ToLocalChecked());
+	Nan::Set(target, New<String>("localizeImageBufferBeacon").ToLocalChecked(),
+			GetFunction(New<FunctionTemplate>(LocalizeImageBufferBeacon)).ToLocalChecked());
+	Nan::Set(target, New<String>("localizeImagePathBeacon").ToLocalChecked(),
+			GetFunction(New<FunctionTemplate>(LocalizeImagePathBeacon)).ToLocalChecked());
+#else
+   	Nan::SetMethod(target, "localizeImageBuffer", LocalizeImageBuffer);
+	Nan::SetMethod(target, "localizeImagePath", LocalizeImagePath);
+	Nan::SetMethod(target, "localizeImageBufferBeacon", LocalizeImageBufferBeacon);
+	Nan::SetMethod(target, "localizeImagePathBeacon", LocalizeImagePathBeacon);
+#endif
 }
 
 NODE_MODULE(localizeImage, Init)

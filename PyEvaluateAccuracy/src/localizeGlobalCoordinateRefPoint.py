@@ -324,10 +324,10 @@ def main():
                     
                     countLocFrame = countLocFrame + 1
                     with open(os.path.join(TEST_FOLDER_LOC,filename)) as locJson:
-                        #print os.path.join(sfm_locOut,filename)
                         locJsonDict = json.load(locJson)
-                        loc = locJsonDict["t"]
-                        fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )
+                        if "t" in locJsonDict:
+                            loc = locJsonDict["t"]
+                            fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )
                 fileLoc.close()
                 
                 # count input images
@@ -355,13 +355,15 @@ def main():
                 with open(os.path.join(TEST_FOLDER_LOC,filename)) as jsonfile:
                     jsonLoc = json.load(jsonfile)
                     
-                    jsonLoc["t_relative"] = jsonLoc["t"]
-                    jsonLoc["R_relative"] = jsonLoc["R"]
-                    jsonLoc["t"] = np.dot(Amat,np.concatenate([jsonLoc["t"],[1]])).tolist()
-                    jsonLoc["R"] = np.dot(jsonLoc["R"],Amat[:, 0:3].T).tolist()
-                    locGlobalJsonObj["locGlobal"].append(jsonLoc)
+                    if "t" in jsonLoc:
+                        jsonLoc["t_relative"] = jsonLoc["t"]
+                        jsonLoc["R_relative"] = jsonLoc["R"]
+                        jsonLoc["t"] = np.dot(Amat,np.concatenate([jsonLoc["t"],[1]])).tolist()
+                        jsonLoc["R"] = np.dot(jsonLoc["R"],Amat[:, 0:3].T).tolist()
+                        
+                        locGlobalPoints.append(jsonLoc["t"])
                     
-                    locGlobalPoints.append(jsonLoc["t"])
+                    locGlobalJsonObj["locGlobal"].append(jsonLoc)
             with open(os.path.join(TEST_FOLDER_LOC, output_json_filename),"w") as jsonfile:
                 json.dump(locGlobalJsonObj, jsonfile)
             

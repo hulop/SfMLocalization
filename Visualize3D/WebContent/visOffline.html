@@ -33,10 +33,17 @@
 		/*
 		var DATASET_NAME = 'calmart-cnn';
 		*/
+		/*
 		var DATASET_NAME = 'wacv-2017-u1-beacon-bow';
+		*/
 		/*
 		var DATASET_NAME = 'wacv-2017-u1-full';
 		*/
+		/*
+		var DATASET_NAME = 'wacv-2017-u1-bow';
+		*/
+		var DATASET_NAME = 'cobot-gates5f';
+		
 		var SFM_STRUCTURE_PLY_FILE = './data/offline/' + DATASET_NAME + '/colorized_global_structure.ply';
 		var SFM_CAMERA_PLY_FILE = './data/offline/' + DATASET_NAME + '/colorized_global_camera.ply';
 		var DENSE_STRUCTURE_PLY_FILE = './data/offline/'+ DATASET_NAME + '/option-merged-global.ply';		
@@ -241,7 +248,7 @@
 			    				
 				// draw grid plane
 				gridParent = new THREE.Object3D();
-				var maxGridAbsVal = 30;
+				var maxGridAbsVal = 300;
 				var gridGap = 1;
 					
 				var geometry = new THREE.Geometry();
@@ -406,11 +413,18 @@
 			        	var data = jsonData["locGlobal"];
 						
 			            for(var i=0; i < data.length; i++){
-			            	centerPoints.push(data[i]["t"]);
-			            	rotationMats.push(data[i]["R"]);
+			            	if (data[i]["t"] && data[i]["R"]) {
+			            		centerPoints.push(data[i]["t"]);
+			            		rotationMats.push(data[i]["R"]);
+			            	} else {
+			            		centerPoints.push([]);
+			            		rotationMats.push([]);
+			            	}
 			            	queryImages.push(data[i]["filename"]);
 			            	if (data[i]["groundtruth"]) {
 			            		groundTruthPoints.push(data[i]["groundtruth"]);
+			            	} else {
+			            		groundTruthPoints.push([]);
 			            	}
 			            }
 			        	
@@ -429,11 +443,13 @@
 				        		createViewImage('data/offline/' + DATASET_NAME + '/image/' + queryImageName, 0.4);
 				        		
 				        		// draw localized point by query image
-								drawPoint(histCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], 0xFF0000);
-								drawPyramid(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], rotationMats[i], 0xFF0000);
-								
+				        		if (centerPoints[i].length>0) {
+									drawPoint(histCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], 0xFF0000);
+									drawPyramid(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], rotationMats[i], 0xFF0000);
+				        		}
+				        		
 				        		// draw groundtruth point
-				        		if (groundTruthPoints[i]) {
+				        		if (groundTruthPoints[i].length>0) {
 									drawPoint(groundTruthCameraParent, groundTruthPoints[i][0], groundTruthPoints[i][1], groundTruthPoints[i][2], 0x0000FF);
 				        		}
 			    	        	

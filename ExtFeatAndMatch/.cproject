@@ -165,7 +165,7 @@
 									<listOptionValue builtIn="false" value="openMVG_image"/>
 									<listOptionValue builtIn="false" value="openMVG_kvld"/>
 									<listOptionValue builtIn="false" value="stlplus"/>
-									<listOptionValue builtIn="false" value="pthread"/>									
+									<listOptionValue builtIn="false" value="pthread"/>
 								</option>
 								<option id="gnu.cpp.link.option.flags.310033181" name="Linker flags" superClass="gnu.cpp.link.option.flags" value="-fopenmp" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1355060627" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">

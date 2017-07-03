@@ -29,20 +29,15 @@
 		var USER_NAME = '1-shrink-0.75';
 		var MAP_NAME = 'cebit-thinklab-shrink-0.75';
 		*/
-		/*
-		var DATASET_NAME = 'cebit-isl-shrink-0.75';
-		var USER_NAME = '1-shrink-0.75';
-		var MAP_NAME = 'cebit-isl-shrink-0.75';
-		*/
-		var DATASET_NAME = 'cebit-isl-shrink-0.75-test';
-		var USER_NAME = '1-shrink-0.75';
-		var MAP_NAME = 'cebit-isl-shrink-0.75-test';
+		var DATASET_NAME = 'cmu-8f';
+		var USER_NAME = '1-iphone7';
+		var MAP_NAME = 'cmu-8f';
 		
 		var SFM_STRUCTURE_PLY_FILE = './data/online/' + DATASET_NAME + '/colorized_global_structure.ply';
 		var SFM_CAMERA_PLY_FILE = './data/online/' + DATASET_NAME + '/colorized_global_camera.ply';
 		var DENSE_STRUCTURE_PLY_FILE = './data/online/'+ DATASET_NAME + '/surface-L2-clean-ascii-global.ply';		
 		var LOCALIZE_JSON_FILE = './data/online/' + DATASET_NAME + '/loc_global.json';
-		var LOCALIZE_API_URL = 'http://tishilinux.trl.ibm.com:3000/localize';
+		var LOCALIZE_API_URL = 'http://tishidev.trl.ibm.com:3000/localize';
 		var SHOW_GRID = true;
 		var SHOW_SFM_CAMERA = false;
 		var SHOW_DENSE_SCENE = false;		
@@ -244,7 +239,7 @@
 			    				
 				// draw grid plane
 				gridParent = new THREE.Object3D();
-				var maxGridAbsVal = 30;
+				var maxGridAbsVal = 300;
 				var gridGap = 1;
 					
 				var geometry = new THREE.Geometry();

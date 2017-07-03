@@ -259,8 +259,13 @@
 			        	var data = jsonData["locRelative"];
 
 			        	for(var i=0; i < data.length; i++){
-			            	centerPoints.push(data[i]["t"]);
-			            	rotationMats.push(data[i]["R"]);
+			        		if (data[i]["t"] && data[i]["R"]) {
+			            		centerPoints.push(data[i]["t"]);
+				            	rotationMats.push(data[i]["R"]);
+			        		} else {
+			            		centerPoints.push([]);
+				            	rotationMats.push([]);
+			        		}
 			            	queryImages.push(data[i]["filename"]);
 			            }
 			        	
@@ -279,8 +284,10 @@
 				        		createViewImage('data/offline/' + DATASET_NAME + '/image/' + queryImageName, 0.4);
 				        		
 				        		// draw localized point by query image
-				        		//drawPoint(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], 0xFF0000);
-								drawPyramid(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], rotationMats[i], 0xFF0000);
+				        		if (centerPoints[i].length>0) {
+				        			//drawPoint(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], 0xFF0000);
+									drawPyramid(locCameraPointsParent, centerPoints[i][0], centerPoints[i][1], centerPoints[i][2], rotationMats[i], 0xFF0000);
+				        		}
 								
 			        			i++;
 			        		} else {

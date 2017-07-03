@@ -263,10 +263,10 @@ class sfmGraph:
             
             countLocFrame = countLocFrame + 1
             with open(os.path.join(model2.locFolLoc,filename)) as locJson:
-                #print os.path.join(sfm_locOut,filename)
                 locJsonDict = json.load(locJson)
-                loc = locJsonDict["t"]
-                fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )   
+                if "t" in locJsonDict:
+                    loc = locJsonDict["t"]
+                    fileLoc.write(str(loc[0]) + " "  + str(loc[1]) + " "  +str(loc[2]) + " 255 0 0\n" )   
         fileLoc.close() 
         
         # get inlier matches
